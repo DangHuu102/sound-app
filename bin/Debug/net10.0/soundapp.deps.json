@@ -1,0 +1,49 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "soundapp/1.0.0": {
+        "dependencies": {
+          "System.Windows.Extensions": "10.0.5"
+        },
+        "runtime": {
+          "soundapp.dll": {}
+        }
+      },
+      "System.Windows.Extensions/10.0.5": {
+        "runtime": {
+          "lib/net10.0/System.Windows.Extensions.dll": {
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.526.15411"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/win/lib/net10.0/System.Windows.Extensions.dll": {
+            "rid": "win",
+            "assetType": "runtime",
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.526.15411"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "soundapp/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "System.Windows.Extensions/10.0.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-5hVP2TIgEqqA590MnKmMN5+Fgzl6xBRjR1wbgC3M1znrZZJe63TwBPN+ymaMgwT0vjsiXk95AjMAe8SAhhJSTg==",
+      "path": "system.windows.extensions/10.0.5",
+      "hashPath": "system.windows.extensions.10.0.5.nupkg.sha512"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "soundapp": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

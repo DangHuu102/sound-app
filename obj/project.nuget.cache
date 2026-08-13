@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "sgzVLVRjHSg=",
+  "success": true,
+  "projectFilePath": "D:\\Solution1\\soundapp\\soundapp.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\huu66\\.nuget\\packages\\microsoft.visualstudio.azure.containers.tools.targets\\1.23.0\\microsoft.visualstudio.azure.containers.tools.targets.1.23.0.nupkg.sha512",
+    "C:\\Users\\huu66\\.nuget\\packages\\system.windows.extensions\\10.0.5\\system.windows.extensions.10.0.5.nupkg.sha512"
+  ],
+  "logs": []
+}
