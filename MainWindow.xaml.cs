@@ -1,0 +1,172 @@
+using System;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Media;
+using System.Windows.Threading;
+using Forms = System.Windows.Forms;
+using System.Diagnostics;
+
+namespace soundapp
+{
+    public partial class MainWindow : Window
+    {
+        private MediaPlayer _mediaPlayer = new MediaPlayer();
+        private Forms.NotifyIcon _notifyIcon;
+        private string _soundFilePath;
+        private DispatcherTimer _visualizerTimer;
+
+        // Global Keyboard Hook variables
+        private const int WH_KEYBOARD_LL = 13;
+        private const int WM_KEYDOWN = 0x0100;
+        private static LowLevelKeyboardProc _proc = HookCallback;
+        private static IntPtr _hookID = IntPtr.Zero;
+        private static MainWindow? _instance;
+
+        private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr GetModuleHandle(string? lpModuleName);
+
+        public MainWindow()
+        {
+            InitializeComponent();
+            _instance = this;
+
+            // Setup default sound
+            _soundFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "click.wav");
+            UpdateSoundFile();
+
+            // Setup System Tray Icon
+            _notifyIcon = new Forms.NotifyIcon
+            {
+                Icon = System.Drawing.SystemIcons.Application,
+                Visible = false,
+                Text = "Sound App - Keyboard Clicker"
+            };
+            _notifyIcon.DoubleClick += NotifyIcon_DoubleClick;
+            
+            // Setup Visualizer Timer
+            _visualizerTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
+            _visualizerTimer.Tick += (s, e) =>
+            {
+                VisualizerBorder.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(51, 51, 51)); // #333
+                KeyDisplay.Text = "PRESS ANY KEY";
+                KeyDisplay.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(170, 170, 170)); // #aaa
+                _visualizerTimer.Stop();
+            };
+
+            // Setup Keyboard Hook
+            _hookID = SetHook(_proc);
+        }
+
+        private void UpdateSoundFile()
+        {
+            if (File.Exists(_soundFilePath))
+            {
+                _mediaPlayer.Open(new Uri(_soundFilePath));
+                _mediaPlayer.Volume = VolumeSlider.Value;
+                CurrentFileText.Text = Path.GetFileName(_soundFilePath);
+            }
+            else
+            {
+                CurrentFileText.Text = "No valid sound file found!";
+            }
+        }
+
+        public void PlaySoundAndFlash(string keyName)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (File.Exists(_soundFilePath))
+                {
+                    // Reset position to play overlapping sounds nicely or just play
+                    _mediaPlayer.Position = TimeSpan.Zero;
+                    _mediaPlayer.Play();
+                }
+
+                VisualizerBorder.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(52, 152, 219)); // Blue flash
+                KeyDisplay.Text = keyName;
+                KeyDisplay.Foreground = System.Windows.Media.Brushes.White;
+
+                _visualizerTimer.Stop();
+                _visualizerTimer.Start();
+            });
+        }
+
+        private void BrowseButton_Click(object sender, RoutedEventArgs e)
+        {
+            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "Audio Files (*.wav;*.mp3)|*.wav;*.mp3|All files (*.*)|*.*"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                _soundFilePath = openFileDialog.FileName;
+                UpdateSoundFile();
+            }
+        }
+
+        private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (_mediaPlayer != null)
+            {
+                _mediaPlayer.Volume = e.NewValue;
+            }
+        }
+
+        private void Window_StateChanged(object sender, EventArgs e)
+        {
+            if (WindowState == WindowState.Minimized)
+            {
+                Hide();
+                _notifyIcon.Visible = true;
+                _notifyIcon.ShowBalloonTip(2000, "Sound App", "Running in background. Type to hear clicks!", Forms.ToolTipIcon.Info);
+            }
+        }
+
+        private void NotifyIcon_DoubleClick(object? sender, EventArgs e)
+        {
+            Show();
+            WindowState = WindowState.Normal;
+            _notifyIcon.Visible = false;
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            UnhookWindowsHookEx(_hookID);
+            _notifyIcon.Dispose();
+        }
+
+        private static IntPtr SetHook(LowLevelKeyboardProc proc)
+        {
+            using (Process curProcess = Process.GetCurrentProcess())
+            using (ProcessModule? curModule = curProcess.MainModule)
+            {
+                return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(curModule?.ModuleName), 0);
+            }
+        }
+
+        private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+        {
+            if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
+            {
+                int vkCode = Marshal.ReadInt32(lParam);
+                var key = System.Windows.Input.KeyInterop.KeyFromVirtualKey(vkCode);
+                _instance?.PlaySoundAndFlash(key.ToString());
+            }
+            return CallNextHookEx(_hookID, nCode, wParam, lParam);
+        }
+    }
+}
