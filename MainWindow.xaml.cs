@@ -52,17 +52,16 @@ namespace soundapp
             {
                 Icon = System.Drawing.SystemIcons.Application,
                 Visible = false,
-                Text = "Sound App - Keyboard Clicker"
+                Text = "Sound Click App"
             };
             _notifyIcon.DoubleClick += NotifyIcon_DoubleClick;
             
-            // Setup Visualizer Timer
+            // Setup Visualizer Timer for the Waveform
             _visualizerTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
             _visualizerTimer.Tick += (s, e) =>
             {
-                VisualizerBorder.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(51, 51, 51)); // #333
-                KeyDisplay.Text = "PRESS ANY KEY";
-                KeyDisplay.Foreground = new SolidColorBrush(System.Windows.Media.Color.FromRgb(170, 170, 170)); // #aaa
+                WaveformPanel.Opacity = 0.5; // Dim down
+                KeyDisplay.Text = "READY";
                 _visualizerTimer.Stop();
             };
 
@@ -75,12 +74,11 @@ namespace soundapp
             if (File.Exists(_soundFilePath))
             {
                 _mediaPlayer.Open(new Uri(_soundFilePath));
-                _mediaPlayer.Volume = VolumeSlider.Value;
                 CurrentFileText.Text = Path.GetFileName(_soundFilePath);
             }
             else
             {
-                CurrentFileText.Text = "No valid sound file found!";
+                CurrentFileText.Text = "NO SOUND";
             }
         }
 
@@ -90,14 +88,13 @@ namespace soundapp
             {
                 if (File.Exists(_soundFilePath))
                 {
-                    // Reset position to play overlapping sounds nicely or just play
                     _mediaPlayer.Position = TimeSpan.Zero;
                     _mediaPlayer.Play();
                 }
 
-                VisualizerBorder.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(52, 152, 219)); // Blue flash
-                KeyDisplay.Text = keyName;
-                KeyDisplay.Foreground = System.Windows.Media.Brushes.White;
+                // Flash visualizer
+                WaveformPanel.Opacity = 1.0;
+                KeyDisplay.Text = keyName.ToUpper();
 
                 _visualizerTimer.Stop();
                 _visualizerTimer.Start();
@@ -132,7 +129,7 @@ namespace soundapp
             {
                 Hide();
                 _notifyIcon.Visible = true;
-                _notifyIcon.ShowBalloonTip(2000, "Sound App", "Running in background. Type to hear clicks!", Forms.ToolTipIcon.Info);
+                _notifyIcon.ShowBalloonTip(2000, "Sound Click App", "Running in background.", Forms.ToolTipIcon.Info);
             }
         }
 
