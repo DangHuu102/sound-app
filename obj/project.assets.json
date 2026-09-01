@@ -1,11 +1,48 @@
 {
   "version": 4,
   "targets": {
-    "net10.0-windows": {}
+    "net10.0-windows": {
+      "YoutubeExplode/6.6.2": {
+        "type": "package",
+        "compile": {
+          "lib/net10.0/YoutubeExplode.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/YoutubeExplode.dll": {
+            "related": ".xml"
+          }
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "YoutubeExplode/6.6.2": {
+      "sha512": "BN12ipOeTX1157Jx2uvFZGhR6dyHnji+8oM37NqXyu7nCL0rrSrxruea8lTSlUGewoxyvdC1owzRLThBI5Wj9Q==",
+      "type": "package",
+      "path": "youtubeexplode/6.6.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "favicon.png",
+        "lib/net10.0/YoutubeExplode.dll",
+        "lib/net10.0/YoutubeExplode.xml",
+        "lib/net6.0/YoutubeExplode.dll",
+        "lib/net6.0/YoutubeExplode.xml",
+        "lib/net7.0/YoutubeExplode.dll",
+        "lib/net7.0/YoutubeExplode.xml",
+        "lib/netstandard2.0/YoutubeExplode.dll",
+        "lib/netstandard2.0/YoutubeExplode.xml",
+        "youtubeexplode.6.6.2.nupkg.sha512",
+        "youtubeexplode.nuspec"
+      ]
+    }
+  },
   "projectFileDependencyGroups": {
-    "net10.0-windows": []
+    "net10.0-windows": [
+      "YoutubeExplode >= 6.6.2"
+    ]
   },
   "packageFolders": {
     "C:\\Users\\huu66\\.nuget\\packages\\": {},
@@ -59,6 +96,12 @@
       "net10.0-windows": {
         "framework": "net10.0-windows7.0",
         "targetAlias": "net10.0-windows",
+        "dependencies": {
+          "YoutubeExplode": {
+            "target": "Package",
+            "version": "[6.6.2, )"
+          }
+        },
         "imports": [
           "net461",
           "net462",

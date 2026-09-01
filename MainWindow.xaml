@@ -114,39 +114,13 @@
     </Window.Resources>
 
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="80"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-
-        <!-- SIDEBAR -->
-        <Border Background="#0D0D17" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="0,0,1,0">
-            <StackPanel Margin="0,30,0,0">
-                <!-- App Icon -->
-                <Ellipse Width="40" Height="40" Stroke="{StaticResource NeonGradient}" StrokeThickness="2" Margin="0,0,0,40">
-                    <Ellipse.Effect>
-                        <DropShadowEffect Color="#f093fb" BlurRadius="15" ShadowDepth="0"/>
-                    </Ellipse.Effect>
-                </Ellipse>
-                
-                <!-- Menu Icons (using Segoe UI Symbol) -->
-                <TextBlock Text="&#xE115;" Style="{StaticResource IconText}" Foreground="#00f2fe">
-                    <TextBlock.Effect>
-                        <DropShadowEffect Color="#00f2fe" BlurRadius="10" ShadowDepth="0"/>
-                    </TextBlock.Effect>
-                </TextBlock>
-                <TextBlock Text="&#xE121;" Style="{StaticResource IconText}"/>
-                <TextBlock Text="&#xE1D3;" Style="{StaticResource IconText}"/>
-                <TextBlock Text="&#xE136;" Style="{StaticResource IconText}"/>
-                <TextBlock Text="&#xE115;" Style="{StaticResource IconText}" Margin="0,200,0,0"/> <!-- Settings at bottom -->
-            </StackPanel>
-        </Border>
-
         <!-- MAIN CONTENT -->
-        <Grid Grid.Column="1" Margin="30">
+        <Grid Margin="30">
+
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
@@ -214,8 +188,31 @@
                 </Grid>
             </Border>
 
-            <!-- PANEL 2: VOLUME MIXER -->
+            <!-- PANEL 3: MUSIC EXPLORER -->
             <Border Grid.Row="2" Style="{StaticResource PanelBorder}">
+                <Grid Margin="30,15">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Text="MUSIC EXPLORER (YOUTUBE)" FontSize="16" FontWeight="SemiBold" Foreground="{StaticResource TextMuted}"/>
+
+                    <Grid Grid.Row="1" Margin="0,15,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBox x:Name="YoutubeUrlTextBox" Background="#0B0B14" Foreground="White" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="1" Padding="10" VerticalContentAlignment="Center" FontSize="14"/>
+                        <Button Grid.Column="1" Content="LOAD AUDIO" Style="{StaticResource HeaderBtn}" Margin="15,0,0,0" Click="LoadYoutubeButton_Click"/>
+                    </Grid>
+                    <TextBlock x:Name="YoutubeStatusText" Grid.Row="1" Margin="0,55,0,0" Text="" Foreground="{StaticResource CyanGradient}" FontSize="12" FontStyle="Italic"/>
+                </Grid>
+            </Border>
+
+            <!-- PANEL 2: VOLUME MIXER -->
+            <Border Grid.Row="3" Style="{StaticResource PanelBorder}">
                 <Grid Margin="30">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -233,7 +230,7 @@
                                 <ColumnDefinition Width="60"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="MASTER" Foreground="White" VerticalAlignment="Center" FontWeight="SemiBold"/>
-                            <Slider Grid.Column="1" Style="{StaticResource NeonSlider}" Minimum="0" Maximum="1" Value="1" ValueChanged="VolumeSlider_ValueChanged"/>
+                            <Slider x:Name="VolumeSlider" Grid.Column="1" Style="{StaticResource NeonSlider}" Minimum="0" Maximum="1" Value="1" ValueChanged="VolumeSlider_ValueChanged"/>
                             <TextBlock Grid.Column="2" Text="100%" Foreground="{StaticResource TextMuted}" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                         </Grid>
                         

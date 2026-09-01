@@ -6,6 +6,8 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Forms = System.Windows.Forms;
 using System.Diagnostics;
+using YoutubeExplode;
+using YoutubeExplode.Videos.Streams;
 
 namespace soundapp
 {
@@ -120,6 +122,60 @@ namespace soundapp
             if (_mediaPlayer != null)
             {
                 _mediaPlayer.Volume = e.NewValue;
+            }
+        }
+
+        private async void LoadYoutubeButton_Click(object sender, RoutedEventArgs e)
+        {
+            string url = YoutubeUrlTextBox.Text;
+            if (string.IsNullOrWhiteSpace(url)) return;
+
+            try
+            {
+                YoutubeStatusText.Text = "Loading video info...";
+                YoutubeStatusText.Foreground = System.Windows.Media.Brushes.Yellow;
+                YoutubeUrlTextBox.IsEnabled = false;
+
+                var youtube = new YoutubeClient();
+                var video = await youtube.Videos.GetAsync(url);
+                var streamManifest = await youtube.Videos.Streams.GetManifestAsync(video.Id);
+
+                var streamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+                
+                if (streamInfo != null)
+                {
+                    YoutubeStatusText.Text = $"Downloading audio... ({video.Title})";
+                    
+                    string tempFile = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.{streamInfo.Container}");
+                    
+                    await youtube.Videos.Streams.DownloadAsync(streamInfo, tempFile);
+
+                    YoutubeStatusText.Text = "Ready!";
+                    YoutubeStatusText.Foreground = System.Windows.Media.Brushes.LightGreen;
+                    
+                    _soundFilePath = tempFile;
+                    CurrentFileText.Text = video.Title;
+                    
+                    if (VolumeSlider != null)
+                    {
+                        _mediaPlayer.Open(new Uri(_soundFilePath));
+                        _mediaPlayer.Volume = VolumeSlider.Value;
+                    }
+                }
+                else
+                {
+                    YoutubeStatusText.Text = "No audio stream found.";
+                    YoutubeStatusText.Foreground = System.Windows.Media.Brushes.Red;
+                }
+            }
+            catch (Exception ex)
+            {
+                YoutubeStatusText.Text = "Error: " + ex.Message;
+                YoutubeStatusText.Foreground = System.Windows.Media.Brushes.Red;
+            }
+            finally
+            {
+                YoutubeUrlTextBox.IsEnabled = true;
             }
         }
 

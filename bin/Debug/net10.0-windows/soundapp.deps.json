@@ -7,8 +7,19 @@
   "targets": {
     ".NETCoreApp,Version=v10.0": {
       "soundapp/1.0.0": {
+        "dependencies": {
+          "YoutubeExplode": "6.6.2"
+        },
         "runtime": {
           "soundapp.dll": {}
+        }
+      },
+      "YoutubeExplode/6.6.2": {
+        "runtime": {
+          "lib/net10.0/YoutubeExplode.dll": {
+            "assemblyVersion": "6.6.2.0",
+            "fileVersion": "6.6.2.0"
+          }
         }
       }
     }
@@ -18,6 +29,13 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "YoutubeExplode/6.6.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-BN12ipOeTX1157Jx2uvFZGhR6dyHnji+8oM37NqXyu7nCL0rrSrxruea8lTSlUGewoxyvdC1owzRLThBI5Wj9Q==",
+      "path": "youtubeexplode/6.6.2",
+      "hashPath": "youtubeexplode.6.6.2.nupkg.sha512"
     }
   }
 }

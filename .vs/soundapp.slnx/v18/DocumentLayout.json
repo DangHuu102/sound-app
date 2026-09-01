@@ -3,8 +3,8 @@
   "WorkspaceRootPath": "D:\\Solution1\\soundapp\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{470CE433-3BA3-E266-DB3B-93FB19E0C1DD}|soundapp.csproj|d:\\solution1\\soundapp\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{470CE433-3BA3-E266-DB3B-93FB19E0C1DD}|soundapp.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Solution1\\soundapp\\Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -68,10 +68,8 @@
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "D:\\Solution1\\soundapp\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAACIAAAAPAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-07T15:44:05.111Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-07T15:44:05.111Z"
             }
           ]
         },
