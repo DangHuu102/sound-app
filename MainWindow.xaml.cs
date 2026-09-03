@@ -54,7 +54,7 @@ namespace soundapp
             {
                 Icon = System.Drawing.SystemIcons.Application,
                 Visible = false,
-                Text = "Sound Click App"
+                Text = "Sound Studio App"
             };
             _notifyIcon.DoubleClick += NotifyIcon_DoubleClick;
             
@@ -103,6 +103,22 @@ namespace soundapp
             });
         }
 
+        private void PlayButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (File.Exists(_soundFilePath))
+            {
+                _mediaPlayer.Play();
+            }
+        }
+
+        private void StopButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (File.Exists(_soundFilePath))
+            {
+                _mediaPlayer.Stop();
+            }
+        }
+
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
         {
             var openFileDialog = new Microsoft.Win32.OpenFileDialog
@@ -133,7 +149,6 @@ namespace soundapp
             try
             {
                 YoutubeStatusText.Text = "Loading video info...";
-                YoutubeStatusText.Foreground = System.Windows.Media.Brushes.Yellow;
                 YoutubeUrlTextBox.IsEnabled = false;
 
                 var youtube = new YoutubeClient();
@@ -151,7 +166,6 @@ namespace soundapp
                     await youtube.Videos.Streams.DownloadAsync(streamInfo, tempFile);
 
                     YoutubeStatusText.Text = "Ready!";
-                    YoutubeStatusText.Foreground = System.Windows.Media.Brushes.LightGreen;
                     
                     _soundFilePath = tempFile;
                     CurrentFileText.Text = video.Title;
@@ -160,18 +174,17 @@ namespace soundapp
                     {
                         _mediaPlayer.Open(new Uri(_soundFilePath));
                         _mediaPlayer.Volume = VolumeSlider.Value;
+                        _mediaPlayer.Play(); // Auto play
                     }
                 }
                 else
                 {
                     YoutubeStatusText.Text = "No audio stream found.";
-                    YoutubeStatusText.Foreground = System.Windows.Media.Brushes.Red;
                 }
             }
             catch (Exception ex)
             {
                 YoutubeStatusText.Text = "Error: " + ex.Message;
-                YoutubeStatusText.Foreground = System.Windows.Media.Brushes.Red;
             }
             finally
             {
@@ -185,7 +198,7 @@ namespace soundapp
             {
                 Hide();
                 _notifyIcon.Visible = true;
-                _notifyIcon.ShowBalloonTip(2000, "Sound Click App", "Running in background.", Forms.ToolTipIcon.Info);
+                _notifyIcon.ShowBalloonTip(2000, "Sound Studio", "Running in background.", Forms.ToolTipIcon.Info);
             }
         }
 
