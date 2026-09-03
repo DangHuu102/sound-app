@@ -1,5 +1,7 @@
 # Sound Studio (Keyboard Clicker)
 
+![Sound Studio UI](preview.jpg)
+
 Sound Studio là một ứng dụng Desktop mạnh mẽ được phát triển bằng **C# WPF**, mang đến trải nghiệm gõ phím hoàn toàn mới với các hiệu ứng âm thanh phong phú và giao diện Cyberpunk cực kỳ hiện đại.
 
 ## Tính năng nổi bật
