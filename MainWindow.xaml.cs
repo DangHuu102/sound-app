@@ -6,7 +6,9 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using Forms = System.Windows.Forms;
 using System.Diagnostics;
+using System.Windows.Media.Imaging;
 using YoutubeExplode;
+using YoutubeExplode.Common;
 using YoutubeExplode.Videos.Streams;
 
 namespace soundapp
@@ -16,38 +18,16 @@ namespace soundapp
         private MediaPlayer _mediaPlayer = new MediaPlayer();
         private Forms.NotifyIcon _notifyIcon;
         private string _soundFilePath;
-        private DispatcherTimer _visualizerTimer;
-
-        // Global Keyboard Hook variables
-        private const int WH_KEYBOARD_LL = 13;
-        private const int WM_KEYDOWN = 0x0100;
-        private static LowLevelKeyboardProc _proc = HookCallback;
-        private static IntPtr _hookID = IntPtr.Zero;
-        private static MainWindow? _instance;
-
-        private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool UnhookWindowsHookEx(IntPtr hhk);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr GetModuleHandle(string? lpModuleName);
+        private string _currentThumbnailUrl;
 
         public MainWindow()
         {
             InitializeComponent();
-            _instance = this;
+            DatabaseManager.InitializeDatabase();
+            LoadHistory();
 
             // Setup default sound
-            _soundFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "click.wav");
-            UpdateSoundFile();
+            CurrentFileText.Text = "Ready to play";
 
             // Setup System Tray Icon
             _notifyIcon = new Forms.NotifyIcon
@@ -57,26 +37,39 @@ namespace soundapp
                 Text = "Sound Studio App"
             };
             _notifyIcon.DoubleClick += NotifyIcon_DoubleClick;
-            
-            // Setup Visualizer Timer for the Waveform
-            _visualizerTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(150) };
-            _visualizerTimer.Tick += (s, e) =>
-            {
-                WaveformPanel.Opacity = 0.5; // Dim down
-                KeyDisplay.Text = "READY";
-                _visualizerTimer.Stop();
-            };
+        }
 
-            // Setup Keyboard Hook
-            _hookID = SetHook(_proc);
+        private void LoadHistory()
+        {
+            try
+            {
+                var history = DatabaseManager.GetHistory();
+                HistoryList.ItemsSource = history;
+            }
+            catch { }
+        }
+
+        private void HistoryList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if (HistoryList.SelectedItem is PlayHistory history)
+            {
+                YoutubeUrlTextBox.Text = history.Url;
+                LoadYoutubeButton_Click(null, null);
+            }
+        }
+
+        private void MiniPlayerBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var miniPlayer = new MiniPlayerWindow(this, CurrentFileText.Text, _currentThumbnailUrl);
+            this.Hide();
+            miniPlayer.Show();
         }
 
         private void UpdateSoundFile()
         {
-            if (File.Exists(_soundFilePath))
+            if (!string.IsNullOrEmpty(_soundFilePath))
             {
                 _mediaPlayer.Open(new Uri(_soundFilePath));
-                CurrentFileText.Text = Path.GetFileName(_soundFilePath);
             }
             else
             {
@@ -84,28 +77,11 @@ namespace soundapp
             }
         }
 
-        public void PlaySoundAndFlash(string keyName)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                if (File.Exists(_soundFilePath))
-                {
-                    _mediaPlayer.Position = TimeSpan.Zero;
-                    _mediaPlayer.Play();
-                }
 
-                // Flash visualizer
-                WaveformPanel.Opacity = 1.0;
-                KeyDisplay.Text = keyName.ToUpper();
-
-                _visualizerTimer.Stop();
-                _visualizerTimer.Start();
-            });
-        }
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
-            if (File.Exists(_soundFilePath))
+            if (!string.IsNullOrEmpty(_soundFilePath))
             {
                 _mediaPlayer.Play();
             }
@@ -113,7 +89,7 @@ namespace soundapp
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
-            if (File.Exists(_soundFilePath))
+            if (!string.IsNullOrEmpty(_soundFilePath))
             {
                 _mediaPlayer.Stop();
             }
@@ -159,15 +135,15 @@ namespace soundapp
                 
                 if (streamInfo != null)
                 {
-                    YoutubeStatusText.Text = $"Downloading audio... ({video.Title})";
+                    YoutubeStatusText.Text = $"Streaming audio... ({video.Title})";
                     
-                    string tempFile = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.{streamInfo.Container}");
+                    _currentThumbnailUrl = video.Thumbnails.GetWithHighestResolution().Url;
+                    try { NowPlayingImage.Source = new BitmapImage(new Uri(_currentThumbnailUrl)); } catch { }
                     
-                    await youtube.Videos.Streams.DownloadAsync(streamInfo, tempFile);
+                    DatabaseManager.AddHistory(video.Title, url, _currentThumbnailUrl);
+                    LoadHistory();
 
-                    YoutubeStatusText.Text = "Ready!";
-                    
-                    _soundFilePath = tempFile;
+                    _soundFilePath = streamInfo.Url;
                     CurrentFileText.Text = video.Title;
                     
                     if (VolumeSlider != null)
@@ -211,28 +187,7 @@ namespace soundapp
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            UnhookWindowsHookEx(_hookID);
             _notifyIcon.Dispose();
-        }
-
-        private static IntPtr SetHook(LowLevelKeyboardProc proc)
-        {
-            using (Process curProcess = Process.GetCurrentProcess())
-            using (ProcessModule? curModule = curProcess.MainModule)
-            {
-                return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(curModule?.ModuleName), 0);
-            }
-        }
-
-        private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
-        {
-            if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
-            {
-                int vkCode = Marshal.ReadInt32(lParam);
-                var key = System.Windows.Input.KeyInterop.KeyFromVirtualKey(vkCode);
-                _instance?.PlaySoundAndFlash(key.ToString());
-            }
-            return CallNextHookEx(_hookID, nCode, wParam, lParam);
         }
     }
 }

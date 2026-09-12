@@ -1,9 +1,16 @@
 {
   "version": 2,
-  "dgSpecHash": "Q9k07h8nC7U=",
+  "dgSpecHash": "acm3rwV8PWY=",
   "success": true,
   "projectFilePath": "D:\\Solution1\\soundapp\\soundapp.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\huu66\\.nuget\\packages\\dapper\\2.1.79\\dapper.2.1.79.nupkg.sha512",
+    "C:\\Users\\huu66\\.nuget\\packages\\microsoft.data.sqlite\\10.0.12\\microsoft.data.sqlite.10.0.12.nupkg.sha512",
+    "C:\\Users\\huu66\\.nuget\\packages\\microsoft.data.sqlite.core\\10.0.12\\microsoft.data.sqlite.core.10.0.12.nupkg.sha512",
+    "C:\\Users\\huu66\\.nuget\\packages\\sqlitepclraw.bundle_e_sqlite3\\2.1.12\\sqlitepclraw.bundle_e_sqlite3.2.1.12.nupkg.sha512",
+    "C:\\Users\\huu66\\.nuget\\packages\\sqlitepclraw.core\\2.1.12\\sqlitepclraw.core.2.1.12.nupkg.sha512",
+    "C:\\Users\\huu66\\.nuget\\packages\\sqlitepclraw.lib.e_sqlite3\\2.1.12\\sqlitepclraw.lib.e_sqlite3.2.1.12.nupkg.sha512",
+    "C:\\Users\\huu66\\.nuget\\packages\\sqlitepclraw.provider.e_sqlite3\\2.1.12\\sqlitepclraw.provider.e_sqlite3.2.1.12.nupkg.sha512",
     "C:\\Users\\huu66\\.nuget\\packages\\youtubeexplode\\6.6.2\\youtubeexplode.6.6.2.nupkg.sha512"
   ],
   "logs": []

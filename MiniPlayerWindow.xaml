@@ -1,0 +1,44 @@
+<Window x:Class="soundapp.MiniPlayerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Mini Player" Height="320" Width="260"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        Topmost="True" WindowStartupLocation="CenterScreen"
+        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+    <Border Background="#161324" CornerRadius="15" BorderBrush="#25213b" BorderThickness="1" Margin="5">
+        <Border.Effect>
+            <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="2" Opacity="0.5"/>
+        </Border.Effect>
+        <Grid Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Thumbnail -->
+            <Border Width="220" Height="220" CornerRadius="10" Background="#25213b" Margin="0,0,0,10" ClipToBounds="True">
+                <Image x:Name="ThumbnailImage" Stretch="UniformToFill"/>
+            </Border>
+
+            <!-- Close Button (Absolute positioned on top right of thumbnail) -->
+            <Button Content="X" Width="24" Height="24" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,5,5,0"
+                    Background="#88000000" Foreground="White" BorderThickness="0" Cursor="Hand" Click="CloseButton_Click">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="12">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+
+            <!-- Title & Artist -->
+            <TextBlock x:Name="TitleText" Grid.Row="1" Text="dusklight" Foreground="White" FontSize="18" FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,5,0,0">
+                <TextBlock Text="✦" Foreground="#59C173" Margin="0,0,5,0"/>
+                <TextBlock x:Name="ArtistText" Text="Sound Studio" Foreground="#8783a2" FontSize="12" TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>
