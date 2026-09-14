@@ -19,6 +19,7 @@ namespace soundapp
         private Forms.NotifyIcon _notifyIcon;
         private string _soundFilePath;
         private string _currentThumbnailUrl;
+        private bool _isExiting = false;
 
         public MainWindow()
         {
@@ -29,12 +30,21 @@ namespace soundapp
             // Setup default sound
             CurrentFileText.Text = "Ready to play";
 
-            // Setup System Tray Icon
+            // Setup System Tray Icon with Exit menu
+            var contextMenu = new Forms.ContextMenuStrip();
+            var exitItem = new Forms.ToolStripMenuItem("Exit");
+            exitItem.Click += (s, e) => {
+                _isExiting = true;
+                System.Windows.Application.Current.Shutdown();
+            };
+            contextMenu.Items.Add(exitItem);
+
             _notifyIcon = new Forms.NotifyIcon
             {
                 Icon = System.Drawing.SystemIcons.Application,
-                Visible = false,
-                Text = "Sound Studio App"
+                Visible = true,
+                Text = "Sound Studio App",
+                ContextMenuStrip = contextMenu
             };
             _notifyIcon.DoubleClick += NotifyIcon_DoubleClick;
         }
@@ -182,12 +192,19 @@ namespace soundapp
         {
             Show();
             WindowState = WindowState.Normal;
-            _notifyIcon.Visible = false;
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            _notifyIcon.Dispose();
+            if (!_isExiting)
+            {
+                e.Cancel = true;
+                MiniPlayerBtn_Click(null, null);
+            }
+            else
+            {
+                _notifyIcon.Dispose();
+            }
         }
     }
 }
