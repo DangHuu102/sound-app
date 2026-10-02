@@ -202,15 +202,8 @@ namespace soundapp
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (!_isExiting)
-            {
-                e.Cancel = true;
-                MiniPlayerBtn_Click(null, null);
-            }
-            else
-            {
-                _notifyIcon.Dispose();
-            }
+            _notifyIcon.Dispose();
+            System.Windows.Application.Current.Shutdown();
         }
     }
 }
