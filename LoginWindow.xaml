@@ -1,0 +1,253 @@
+<Window x:Class="soundapp.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Sound Studio — Login" Height="650" Width="900"
+        Background="#0B0914" WindowStartupLocation="CenterScreen"
+        WindowStyle="None" AllowsTransparency="True"
+        ResizeMode="NoResize">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="Purple" Color="#7B2FBE"/>
+        <SolidColorBrush x:Key="PurpleLight" Color="#9B4DFF"/>
+        <SolidColorBrush x:Key="TextMuted" Color="#8783a2"/>
+
+        <!-- Input Style -->
+        <Style x:Key="InputBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#1A1530"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#2e2a4a"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="16,14"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="CaretBrush" Value="White"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="#7B2FBE"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Password Style -->
+        <Style x:Key="PasswordBox" TargetType="PasswordBox">
+            <Setter Property="Background" Value="#1A1530"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#2e2a4a"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="16,14"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="#7B2FBE"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Outline Button -->
+        <Style x:Key="OutlineBtn" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#7B2FBE"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="Padding" Value="20,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="20" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Filled Button -->
+        <Style x:Key="FilledBtn" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border CornerRadius="20" Padding="{TemplateBinding Padding}">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#7B2FBE" Offset="0"/>
+                                    <GradientStop Color="#9B4DFF" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Border Background="#0B0914" CornerRadius="12" BorderBrush="#1e1a35" BorderThickness="1">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="60"/>
+                <RowDefinition Height="1"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="40"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0" Margin="30,0">
+                <!-- Logo + Title -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Width="38" Height="38" CornerRadius="10" Margin="0,0,12,0">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#5D26C1" Offset="0"/>
+                                <GradientStop Color="#9B4DFF" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                        <TextBlock Text="♫" FontSize="18" Foreground="White"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Sound Studio" Foreground="White" FontSize="15" FontWeight="Bold"/>
+                        <TextBlock Text="Feel the Difference" Foreground="{StaticResource TextMuted}" FontSize="11"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Nav Buttons -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button Content="Sign up" Style="{StaticResource OutlineBtn}" Margin="0,0,10,0" Click="SignUpLink_Click"/>
+                    <Button Content="Log in" Style="{StaticResource FilledBtn}"/>
+                </StackPanel>
+
+                <!-- Close button -->
+                <Button Content="✕" HorizontalAlignment="Right" VerticalAlignment="Top"
+                        Width="30" Height="30" Margin="0,5,-60,0"
+                        Background="Transparent" Foreground="{StaticResource TextMuted}"
+                        BorderThickness="0" Cursor="Hand" Click="CloseBtn_Click"
+                        FontSize="14"/>
+            </Grid>
+
+            <!-- Divider -->
+            <Border Grid.Row="1" Background="#1e1a35"/>
+
+            <!-- Main Content -->
+            <StackPanel Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Width="360">
+
+                <!-- Music icon -->
+                <Border Width="60" Height="60" CornerRadius="30" HorizontalAlignment="Center" Margin="0,0,0,20">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#2a1f4a" Offset="0"/>
+                            <GradientStop Color="#3d2070" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <TextBlock Text="♪" FontSize="26" Foreground="#9B4DFF"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+
+                <!-- Welcome text -->
+                <TextBlock Text="Welcome back" Foreground="White" FontSize="28" FontWeight="Bold"
+                           HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                <TextBlock Text="Sign in to continue listening." Foreground="{StaticResource TextMuted}"
+                           FontSize="14" HorizontalAlignment="Center" Margin="0,0,0,30"/>
+
+                <!-- Email -->
+                <TextBox x:Name="EmailBox" Style="{StaticResource InputBox}"
+                         Tag="Email address" Margin="0,0,0,12"
+                         GotFocus="ClearPlaceholder" LostFocus="RestorePlaceholder"/>
+
+                <!-- Password -->
+                <Grid Margin="0,0,0,12">
+                    <PasswordBox x:Name="PasswordBox" Style="{StaticResource PasswordBox}"/>
+                    <Button x:Name="TogglePwdBtn" Content="👁" Background="Transparent"
+                            BorderThickness="0" Foreground="{StaticResource TextMuted}"
+                            HorizontalAlignment="Right" VerticalAlignment="Center"
+                            Margin="0,0,14,0" Cursor="Hand" FontSize="16"
+                            Click="TogglePwd_Click"/>
+                </Grid>
+
+                <!-- Remember me + Forgot password -->
+                <Grid Margin="0,0,0,20">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <CheckBox x:Name="RememberMe" Foreground="{StaticResource TextMuted}" FontSize="13"
+                                  Content="Remember me" VerticalContentAlignment="Center"/>
+                    </StackPanel>
+                    <Button Content="Forgot password?" HorizontalAlignment="Right"
+                            Background="Transparent" BorderThickness="0"
+                            Foreground="#9B4DFF" FontSize="13" Cursor="Hand"/>
+                </Grid>
+
+                <!-- Log In Button -->
+                <Button x:Name="LoginBtn" Click="LoginBtn_Click"
+                        Height="48" FontSize="15" FontWeight="Bold" Margin="0,0,0,20">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border CornerRadius="10">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#7B2FBE" Offset="0"/>
+                                        <GradientStop Color="#9B4DFF" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <TextBlock Text="Log in" Foreground="White" FontSize="15"
+                                           FontWeight="Bold" HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+
+                <!-- Error message -->
+                <TextBlock x:Name="ErrorText" Foreground="#ff5555" FontSize="13"
+                           HorizontalAlignment="Center" Visibility="Collapsed" Margin="0,0,0,10"/>
+
+                <!-- Sign up link -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBlock Text="Don't have an account? " Foreground="{StaticResource TextMuted}" FontSize="13"/>
+                    <Button Content="Sign up" Background="Transparent" BorderThickness="0"
+                            Foreground="#9B4DFF" FontSize="13" FontWeight="Bold"
+                            Cursor="Hand" Click="SignUpLink_Click"/>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Footer -->
+            <TextBlock Grid.Row="3" Text="UI concept · Dark mode · Violet accents"
+                       Foreground="#3a3550" FontSize="11"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Grid>
+    </Border>
+</Window>
