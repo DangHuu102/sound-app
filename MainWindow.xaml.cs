@@ -1,12 +1,8 @@
 using System;
-using System.IO;
-using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Media;
-using System.Windows.Threading;
-using Forms = System.Windows.Forms;
-using System.Diagnostics;
 using System.Windows.Media.Imaging;
+using Forms = System.Windows.Forms;
 using YoutubeExplode;
 using YoutubeExplode.Common;
 using YoutubeExplode.Videos.Streams;
@@ -15,46 +11,48 @@ namespace soundapp
 {
     public partial class MainWindow : Window
     {
-        private MediaPlayer _mediaPlayer = new MediaPlayer();
-        private Forms.NotifyIcon _notifyIcon;
-        private string _soundFilePath;
-        private string _currentThumbnailUrl;
-        private bool _isExiting = false;
+        // Dùng chung 1 instance, không tạo mới mỗi lần
+        private readonly MediaPlayer _mediaPlayer = new MediaPlayer();
+        private readonly YoutubeClient _youtube = new YoutubeClient();
+        private Forms.NotifyIcon _notifyIcon = null!;
+        private string? _soundFilePath;
+        private string? _currentThumbnailUrl;
 
         public MainWindow()
         {
             InitializeComponent();
             DatabaseManager.InitializeDatabase();
             LoadHistory();
-
-            // Setup default sound
             CurrentFileText.Text = "Ready to play";
+            SetupTrayIcon();
+        }
 
-            // Setup System Tray Icon with Exit menu
+        private void SetupTrayIcon()
+        {
             var contextMenu = new Forms.ContextMenuStrip();
             var exitItem = new Forms.ToolStripMenuItem("Exit");
-            exitItem.Click += (s, e) => {
-                _isExiting = true;
-                System.Windows.Application.Current.Shutdown();
-            };
+            exitItem.Click += (s, e) => System.Windows.Application.Current.Shutdown();
             contextMenu.Items.Add(exitItem);
 
             _notifyIcon = new Forms.NotifyIcon
             {
                 Icon = System.Drawing.SystemIcons.Application,
                 Visible = true,
-                Text = "Sound Studio App",
+                Text = "Sound Studio",
                 ContextMenuStrip = contextMenu
             };
-            _notifyIcon.DoubleClick += NotifyIcon_DoubleClick;
+            _notifyIcon.DoubleClick += (s, e) =>
+            {
+                Show();
+                WindowState = WindowState.Normal;
+            };
         }
 
         private void LoadHistory()
         {
             try
             {
-                var history = DatabaseManager.GetHistory();
-                HistoryList.ItemsSource = history;
+                HistoryList.ItemsSource = DatabaseManager.GetHistory();
             }
             catch { }
         }
@@ -64,7 +62,7 @@ namespace soundapp
             if (HistoryList.SelectedItem is PlayHistory history)
             {
                 YoutubeUrlTextBox.Text = history.Url;
-                LoadYoutubeButton_Click(null, null);
+                LoadYoutubeButton_Click(null!, null!);
             }
         }
 
@@ -76,103 +74,91 @@ namespace soundapp
 
         private void MiniPlayerBtn_Click(object sender, RoutedEventArgs e)
         {
-            var miniPlayer = new MiniPlayerWindow(this, CurrentFileText.Text, _currentThumbnailUrl);
-            this.Hide();
+            var miniPlayer = new MiniPlayerWindow(this, CurrentFileText.Text, _currentThumbnailUrl ?? "");
+            Hide();
             miniPlayer.Show();
         }
-
-        private void UpdateSoundFile()
-        {
-            if (!string.IsNullOrEmpty(_soundFilePath))
-            {
-                _mediaPlayer.Open(new Uri(_soundFilePath));
-            }
-            else
-            {
-                CurrentFileText.Text = "NO SOUND";
-            }
-        }
-
-
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrEmpty(_soundFilePath))
-            {
                 _mediaPlayer.Play();
-            }
         }
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrEmpty(_soundFilePath))
-            {
                 _mediaPlayer.Stop();
-            }
         }
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
         {
-            var openFileDialog = new Microsoft.Win32.OpenFileDialog
+            var dialog = new Microsoft.Win32.OpenFileDialog
             {
                 Filter = "Audio Files (*.wav;*.mp3)|*.wav;*.mp3|All files (*.*)|*.*"
             };
-
-            if (openFileDialog.ShowDialog() == true)
+            if (dialog.ShowDialog() == true)
             {
-                _soundFilePath = openFileDialog.FileName;
-                UpdateSoundFile();
+                _soundFilePath = dialog.FileName;
+                _mediaPlayer.Open(new Uri(_soundFilePath));
+                CurrentFileText.Text = System.IO.Path.GetFileName(_soundFilePath);
             }
         }
 
         private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (_mediaPlayer != null)
-            {
-                _mediaPlayer.Volume = e.NewValue;
-            }
+            _mediaPlayer.Volume = e.NewValue;
         }
 
         private async void LoadYoutubeButton_Click(object sender, RoutedEventArgs e)
         {
-            string url = YoutubeUrlTextBox.Text;
+            string url = YoutubeUrlTextBox.Text?.Trim() ?? "";
             if (string.IsNullOrWhiteSpace(url)) return;
+
+            YoutubeUrlTextBox.IsEnabled = false;
+            YoutubeStatusText.Text = "Loading...";
 
             try
             {
-                YoutubeStatusText.Text = "Loading video info...";
-                YoutubeUrlTextBox.IsEnabled = false;
+                var video = await _youtube.Videos.GetAsync(url);
+                var manifest = await _youtube.Videos.Streams.GetManifestAsync(video.Id);
+                var streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
 
-                var youtube = new YoutubeClient();
-                var video = await youtube.Videos.GetAsync(url);
-                var streamManifest = await youtube.Videos.Streams.GetManifestAsync(video.Id);
-
-                var streamInfo = streamManifest.GetAudioOnlyStreams().GetWithHighestBitrate();
-                
-                if (streamInfo != null)
-                {
-                    YoutubeStatusText.Text = $"Streaming audio... ({video.Title})";
-                    
-                    _currentThumbnailUrl = video.Thumbnails.GetWithHighestResolution().Url;
-                    try { NowPlayingImage.Source = new BitmapImage(new Uri(_currentThumbnailUrl)); } catch { }
-                    
-                    DatabaseManager.AddHistory(video.Title, url, _currentThumbnailUrl);
-                    LoadHistory();
-
-                    _soundFilePath = streamInfo.Url;
-                    CurrentFileText.Text = video.Title;
-                    
-                    if (VolumeSlider != null)
-                    {
-                        _mediaPlayer.Open(new Uri(_soundFilePath));
-                        _mediaPlayer.Volume = VolumeSlider.Value;
-                        _mediaPlayer.Play(); // Auto play
-                    }
-                }
-                else
+                if (streamInfo == null)
                 {
                     YoutubeStatusText.Text = "No audio stream found.";
+                    return;
                 }
+
+                // Dispose stream cũ trước khi mở cái mới
+                _mediaPlayer.Stop();
+                _mediaPlayer.Close();
+
+                _soundFilePath = streamInfo.Url;
+                _currentThumbnailUrl = video.Thumbnails.GetWithHighestResolution().Url;
+
+                // Load thumbnail nhẹ hơn: giới hạn kích thước decode
+                try
+                {
+                    var bmp = new BitmapImage();
+                    bmp.BeginInit();
+                    bmp.UriSource = new Uri(_currentThumbnailUrl);
+                    bmp.DecodePixelWidth = 320; // giới hạn decode để tiết kiệm RAM
+                    bmp.CacheOption = BitmapCacheOption.None;
+                    bmp.EndInit();
+                    NowPlayingImage.Source = bmp;
+                }
+                catch { }
+
+                CurrentFileText.Text = video.Title;
+                YoutubeStatusText.Text = $"▶ {video.Title}";
+
+                DatabaseManager.AddHistory(video.Title, url, _currentThumbnailUrl);
+                LoadHistory();
+
+                _mediaPlayer.Open(new Uri(_soundFilePath));
+                _mediaPlayer.Volume = VolumeSlider?.Value ?? 1.0;
+                _mediaPlayer.Play();
             }
             catch (Exception ex)
             {
@@ -189,19 +175,14 @@ namespace soundapp
             if (WindowState == WindowState.Minimized)
             {
                 Hide();
-                _notifyIcon.Visible = true;
-                _notifyIcon.ShowBalloonTip(2000, "Sound Studio", "Running in background.", Forms.ToolTipIcon.Info);
+                _notifyIcon.ShowBalloonTip(1500, "Sound Studio", "Running in background.", Forms.ToolTipIcon.Info);
             }
-        }
-
-        private void NotifyIcon_DoubleClick(object? sender, EventArgs e)
-        {
-            Show();
-            WindowState = WindowState.Normal;
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            _mediaPlayer.Stop();
+            _mediaPlayer.Close();
             _notifyIcon.Dispose();
             System.Windows.Application.Current.Shutdown();
         }
