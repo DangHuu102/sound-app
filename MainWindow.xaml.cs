@@ -22,7 +22,9 @@ namespace soundapp
         {
             InitializeComponent();
             DatabaseManager.InitializeDatabase();
+            DatabaseManager.InitializePlaylists();
             LoadHistory();
+            LoadPlaylists();
             CurrentFileText.Text = "Ready to play";
             SetupTrayIcon();
         }
@@ -70,6 +72,21 @@ namespace soundapp
         {
             DatabaseManager.ClearHistory();
             LoadHistory();
+        }
+
+        private void LoadPlaylists()
+        {
+            try { PlaylistList.ItemsSource = DatabaseManager.GetPlaylists(); } catch { }
+        }
+
+        private void CreatePlaylistBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new CreatePlaylistDialog();
+            if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(dialog.PlaylistName))
+            {
+                DatabaseManager.CreatePlaylist(dialog.PlaylistName);
+                LoadPlaylists();
+            }
         }
 
         private void MiniPlayerBtn_Click(object sender, RoutedEventArgs e)

@@ -16,6 +16,13 @@ namespace soundapp
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 
+    public class Playlist
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+    }
+
     public static class DatabaseManager
     {
         private static string GetDbPath()
@@ -73,6 +80,36 @@ namespace soundapp
             using (var connection = new SqliteConnection(GetConnectionString()))
             {
                 connection.Execute("DELETE FROM PlayHistory");
+            }
+        }
+
+        public static void InitializePlaylists()
+        {
+            using (var connection = new SqliteConnection(GetConnectionString()))
+            {
+                connection.Open();
+                connection.Execute(@"
+                    CREATE TABLE IF NOT EXISTS Playlists (
+                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        Name TEXT NOT NULL,
+                        CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+                    );");
+            }
+        }
+
+        public static List<Playlist> GetPlaylists()
+        {
+            using (var connection = new SqliteConnection(GetConnectionString()))
+            {
+                return connection.Query<Playlist>("SELECT * FROM Playlists ORDER BY CreatedAt DESC").ToList();
+            }
+        }
+
+        public static void CreatePlaylist(string name)
+        {
+            using (var connection = new SqliteConnection(GetConnectionString()))
+            {
+                connection.Execute("INSERT INTO Playlists (Name) VALUES (@Name)", new { Name = name });
             }
         }
     }
