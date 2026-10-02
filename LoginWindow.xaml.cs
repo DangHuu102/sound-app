@@ -8,6 +8,8 @@ namespace soundapp
         public LoginWindow()
         {
             InitializeComponent();
+            DatabaseManager.InitializeDatabase();
+
             EmailBox.Text = "Email address";
             EmailBox.Foreground = System.Windows.Media.Brushes.Gray;
             MouseLeftButtonDown += (s, e) => { if (e.ButtonState == MouseButtonState.Pressed) DragMove(); };
@@ -41,26 +43,27 @@ namespace soundapp
             string password = PasswordBox.Password;
 
             if (string.IsNullOrWhiteSpace(email) || email == "Email address")
-            {
-                ShowError("Please enter your email address.");
-                return;
-            }
-            if (string.IsNullOrWhiteSpace(password))
-            {
-                ShowError("Please enter your password.");
-                return;
-            }
+            { ShowError("Please enter your email address."); return; }
 
-            // TODO: Gọi API xác thực khi có Backend
-            var mainWindow = new MainWindow();
-            mainWindow.Show();
+            if (string.IsNullOrWhiteSpace(password))
+            { ShowError("Please enter your password."); return; }
+
+            // Xác thực với database
+            var user = DatabaseManager.Login(email, password);
+            if (user == null)
+            { ShowError("Incorrect email or password."); return; }
+
+            // Đăng nhập thành công
+            var main = new MainWindow();
+            main.Show();
             Close();
         }
 
         private void SignUpLink_Click(object sender, RoutedEventArgs e)
         {
-            System.Windows.MessageBox.Show("Sign up feature coming soon!", "Sound Studio",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            var signUp = new SignUpWindow();
+            signUp.Show();
+            Close();
         }
 
         private void CloseBtn_Click(object sender, RoutedEventArgs e)

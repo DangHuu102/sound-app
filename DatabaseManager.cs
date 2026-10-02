@@ -23,6 +23,15 @@ namespace soundapp
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 
+    public class User
+    {
+        public int Id { get; set; }
+        public string Email { get; set; } = "";
+        public string PasswordHash { get; set; } = "";
+        public string DisplayName { get; set; } = "";
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+    }
+
     public static class DatabaseManager
     {
         private static string GetDbPath()
@@ -40,7 +49,7 @@ namespace soundapp
             using (var connection = new SqliteConnection(GetConnectionString()))
             {
                 connection.Open();
-                var createTableCmd = @"
+                connection.Execute(@"
                     CREATE TABLE IF NOT EXISTS PlayHistory (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         Title TEXT NOT NULL,
@@ -48,9 +57,43 @@ namespace soundapp
                         ThumbnailUrl TEXT NOT NULL,
                         CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
                     );
-                ";
-                connection.Execute(createTableCmd);
+                    CREATE TABLE IF NOT EXISTS Users (
+                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        Email TEXT NOT NULL UNIQUE,
+                        PasswordHash TEXT NOT NULL,
+                        DisplayName TEXT NOT NULL,
+                        CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+                    );");
             }
+        }
+
+        // Hash mật khẩu đơn giản (production nên dùng BCrypt)
+        private static string HashPassword(string password)
+        {
+            using var sha = System.Security.Cryptography.SHA256.Create();
+            var bytes = sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password + "soundstudio_salt"));
+            return Convert.ToHexString(bytes);
+        }
+
+        public static bool Register(string email, string password, string displayName)
+        {
+            try
+            {
+                using var connection = new SqliteConnection(GetConnectionString());
+                connection.Execute(
+                    "INSERT INTO Users (Email, PasswordHash, DisplayName) VALUES (@Email, @Hash, @Name)",
+                    new { Email = email.ToLower(), Hash = HashPassword(password), Name = displayName });
+                return true;
+            }
+            catch { return false; } // Email đã tồn tại
+        }
+
+        public static User? Login(string email, string password)
+        {
+            using var connection = new SqliteConnection(GetConnectionString());
+            return connection.QueryFirstOrDefault<User>(
+                "SELECT * FROM Users WHERE Email = @Email AND PasswordHash = @Hash",
+                new { Email = email.ToLower(), Hash = HashPassword(password) });
         }
 
         public static void AddHistory(string title, string url, string thumbnailUrl)
