@@ -54,14 +54,21 @@ namespace soundapp
             if (password.Length < 6)
             { ShowError("Password must be at least 6 characters."); return; }
 
-            bool success = DatabaseManager.Register(email, password, name);
-            if (!success)
-            { ShowError("This email is already registered."); return; }
+            // MOCK GỬI EMAIL: Tạo mã OTP 6 số ngẫu nhiên
+            string otpCode = new System.Random().Next(100000, 999999).ToString();
+            var otpDialog = new VerifyOtpWindow(email, otpCode) { Owner = this };
 
-            // Đăng ký thành công → mở MainWindow
-            var main = new MainWindow();
-            main.Show();
-            Close();
+            if (otpDialog.ShowDialog() == true)
+            {
+                // OTP đúng -> Lưu user
+                bool success = DatabaseManager.Register(email, password, name);
+                if (!success)
+                { ShowError("This email is already registered."); return; }
+
+                var main = new MainWindow();
+                main.Show();
+                Close();
+            }
         }
 
         private void LoginLink_Click(object sender, RoutedEventArgs e)

@@ -59,6 +59,22 @@ namespace soundapp
             Close();
         }
 
+        private void MsLoginBtn_Click(object sender, RoutedEventArgs e)
+        {
+            System.Windows.MessageBox.Show(
+                "Để đăng nhập thật bằng Microsoft, bạn cần tạo Azure AD App Registration và dùng thư viện MSAL.NET.\n\n" +
+                "Tính năng này sẽ được kích hoạt khi có Backend Server.", 
+                "Microsoft Login Info", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void GuestLogin_Click(object sender, RoutedEventArgs e)
+        {
+            // Vào thẳng app với tư cách Guest
+            var main = new MainWindow();
+            main.Show();
+            Close();
+        }
+
         private void SignUpLink_Click(object sender, RoutedEventArgs e)
         {
             var signUp = new SignUpWindow();

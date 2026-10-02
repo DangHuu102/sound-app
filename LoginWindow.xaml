@@ -211,6 +211,18 @@
                             Foreground="#9B4DFF" FontSize="13" Cursor="Hand"/>
                 </Grid>
 
+                <!-- Microsoft Login Button -->
+                <Button x:Name="MsLoginBtn" Click="MsLoginBtn_Click" Margin="0,0,0,12" Height="48"
+                        Background="Transparent" BorderThickness="1" BorderBrush="#2e2a4a" Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border"><Setter Property="CornerRadius" Value="10"/></Style>
+                    </Button.Resources>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="M" Foreground="#00a4ef" FontWeight="Bold" FontSize="18" Margin="0,0,10,0"/>
+                        <TextBlock Text="Sign in with Microsoft" Foreground="White" FontSize="15" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+
                 <!-- Log In Button -->
                 <Button x:Name="LoginBtn" Click="LoginBtn_Click"
                         Height="48" FontSize="15" FontWeight="Bold" Margin="0,0,0,20">
@@ -242,6 +254,10 @@
                             Foreground="#9B4DFF" FontSize="13" FontWeight="Bold"
                             Cursor="Hand" Click="SignUpLink_Click"/>
                 </StackPanel>
+
+                <!-- Continue as Guest -->
+                <Button Content="Continue as Guest" Click="GuestLogin_Click" Background="Transparent" BorderThickness="0"
+                        Foreground="#8783a2" FontSize="13" Cursor="Hand" Margin="0,15,0,0"/>
             </StackPanel>
 
             <!-- Footer -->
