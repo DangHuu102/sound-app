@@ -67,5 +67,13 @@ namespace soundapp
                 return connection.Query<PlayHistory>("SELECT * FROM PlayHistory ORDER BY CreatedAt DESC LIMIT 50").ToList();
             }
         }
+
+        public static void ClearHistory()
+        {
+            using (var connection = new SqliteConnection(GetConnectionString()))
+            {
+                connection.Execute("DELETE FROM PlayHistory");
+            }
+        }
     }
 }

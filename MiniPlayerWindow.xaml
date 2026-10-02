@@ -3,42 +3,50 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Mini Player" Height="320" Width="260"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
-        Topmost="True" WindowStartupLocation="CenterScreen"
-        MouseLeftButtonDown="Window_MouseLeftButtonDown">
+        Topmost="True" WindowStartupLocation="CenterScreen">
+    
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="0" ResizeBorderThickness="5" GlassFrameThickness="0" CornerRadius="15"/>
+    </WindowChrome.WindowChrome>
     <Border Background="#161324" CornerRadius="15" BorderBrush="#25213b" BorderThickness="1" Margin="5">
         <Border.Effect>
             <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="2" Opacity="0.5"/>
         </Border.Effect>
-        <Grid Margin="10">
+        <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="35"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Thumbnail -->
-            <Border Width="220" Height="220" CornerRadius="10" Background="#25213b" Margin="0,0,0,10" ClipToBounds="True">
-                <Image x:Name="ThumbnailImage" Stretch="UniformToFill"/>
-            </Border>
+            <!-- Title Bar -->
+            <Grid Grid.Row="0" Background="Transparent" MouseLeftButtonDown="Window_MouseLeftButtonDown">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,10,0">
+                    <Button Content="—" Width="30" Height="25" Background="Transparent" Foreground="{StaticResource TextMuted}" BorderThickness="0" Cursor="Hand" Click="MinimizeButton_Click"/>
+                    <Button Content="⤢" Width="30" Height="25" Background="Transparent" Foreground="{StaticResource TextMuted}" BorderThickness="0" Cursor="Hand" Click="RestoreButton_Click" ToolTip="Phóng to (Về cửa sổ chính)"/>
+                    <Button Content="✕" Width="30" Height="25" Background="Transparent" Foreground="#ff5555" BorderThickness="0" Cursor="Hand" Click="CloseButton_Click" ToolTip="Tắt ứng dụng"/>
+                </StackPanel>
+            </Grid>
 
-            <!-- Close Button (Absolute positioned on top right of thumbnail) -->
-            <Button Content="X" Width="24" Height="24" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,5,5,0"
-                    Background="#88000000" Foreground="White" BorderThickness="0" Cursor="Hand" Click="CloseButton_Click">
-                <Button.Template>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="12">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                    </ControlTemplate>
-                </Button.Template>
-            </Button>
+            <!-- Content -->
+            <Grid Grid.Row="1" Margin="15,0,15,15">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-            <!-- Title & Artist -->
-            <TextBlock x:Name="TitleText" Grid.Row="1" Text="dusklight" Foreground="White" FontSize="18" FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
-            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,5,0,0">
-                <TextBlock Text="✦" Foreground="#59C173" Margin="0,0,5,0"/>
-                <TextBlock x:Name="ArtistText" Text="Sound Studio" Foreground="#8783a2" FontSize="12" TextTrimming="CharacterEllipsis"/>
-            </StackPanel>
+                <!-- Thumbnail -->
+                <Border CornerRadius="10" Background="#25213b" Margin="0,0,0,10" ClipToBounds="True">
+                    <Image x:Name="ThumbnailImage" Stretch="UniformToFill"/>
+                </Border>
+
+                <!-- Title & Artist -->
+                <TextBlock x:Name="TitleText" Grid.Row="1" Text="dusklight" Foreground="White" FontSize="18" FontWeight="Bold" TextTrimming="CharacterEllipsis"/>
+                <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,5,0,0">
+                    <TextBlock Text="✦" Foreground="#59C173" Margin="0,0,5,0"/>
+                    <TextBlock x:Name="ArtistText" Text="Sound Studio" Foreground="#8783a2" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+            </Grid>
         </Grid>
     </Border>
 </Window>

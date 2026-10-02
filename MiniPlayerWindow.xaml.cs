@@ -27,13 +27,24 @@ namespace soundapp
 
         private void Window_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            DragMove();
+            if (e.ChangedButton == MouseButton.Left)
+                DragMove();
+        }
+
+        private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
+
+        private void RestoreButton_Click(object sender, RoutedEventArgs e)
+        {
+            _parentWindow.Show();
+            this.Close();
         }
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            _parentWindow.Show();
-            this.Close();
+            System.Windows.Application.Current.Shutdown();
         }
     }
 }

@@ -68,6 +68,12 @@ namespace soundapp
             }
         }
 
+        private void ClearHistoryBtn_Click(object sender, RoutedEventArgs e)
+        {
+            DatabaseManager.ClearHistory();
+            LoadHistory();
+        }
+
         private void MiniPlayerBtn_Click(object sender, RoutedEventArgs e)
         {
             var miniPlayer = new MiniPlayerWindow(this, CurrentFileText.Text, _currentThumbnailUrl);
