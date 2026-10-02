@@ -161,7 +161,9 @@
                         </Button.Style>
                     </Button>
                 </Grid>
-                <ListBox x:Name="HistoryList" Background="Transparent" BorderThickness="0" Foreground="{StaticResource TextMuted}" SelectionChanged="HistoryList_SelectionChanged">
+                <ListBox x:Name="HistoryList" Background="Transparent" BorderThickness="0" Foreground="{StaticResource TextMuted}" SelectionChanged="HistoryList_SelectionChanged"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="ListBoxItem">
                             <Setter Property="Template">
