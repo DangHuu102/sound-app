@@ -8,13 +8,13 @@ namespace soundapp
         public SignUpWindow()
         {
             InitializeComponent();
-            NameBox.Text = "Display name";
+            NameBox.Text = "Enter your username";
             NameBox.Foreground = System.Windows.Media.Brushes.Gray;
-            NameBox.Tag = "Display name";
+            NameBox.Tag = "Enter your username";
 
-            EmailBox.Text = "Email address";
+            EmailBox.Text = "Enter your email";
             EmailBox.Foreground = System.Windows.Media.Brushes.Gray;
-            EmailBox.Tag = "Email address";
+            EmailBox.Tag = "Enter your email";
 
             MouseLeftButtonDown += (s, e) => { if (e.ButtonState == MouseButtonState.Pressed) DragMove(); };
         }
@@ -44,23 +44,25 @@ namespace soundapp
             string name = NameBox.Text.Trim();
             string email = EmailBox.Text.Trim();
             string password = PasswordBox.Password;
+            string confirm = ConfirmBox.Password;
 
-            if (string.IsNullOrWhiteSpace(name) || name == "Display name")
-            { ShowError("Please enter your display name."); return; }
+            if (string.IsNullOrWhiteSpace(name) || name == "Enter your username")
+            { ShowError("Please enter your username."); return; }
 
-            if (string.IsNullOrWhiteSpace(email) || email == "Email address" || !email.Contains("@"))
+            if (string.IsNullOrWhiteSpace(email) || email == "Enter your email" || !email.Contains("@"))
             { ShowError("Please enter a valid email address."); return; }
 
             if (password.Length < 6)
             { ShowError("Password must be at least 6 characters."); return; }
 
-            // MOCK GỬI EMAIL: Tạo mã OTP 6 số ngẫu nhiên
+            if (password != confirm)
+            { ShowError("Passwords do not match."); return; }
+
             string otpCode = new System.Random().Next(100000, 999999).ToString();
             var otpDialog = new VerifyOtpWindow(email, otpCode) { Owner = this };
 
             if (otpDialog.ShowDialog() == true)
             {
-                // OTP đúng -> Lưu user
                 bool success = DatabaseManager.Register(email, password, name);
                 if (!success)
                 { ShowError("This email is already registered."); return; }
@@ -76,6 +78,18 @@ namespace soundapp
             var login = new LoginWindow();
             login.Show();
             Close();
+        }
+
+        private void Back_Click(object sender, RoutedEventArgs e)
+        {
+            var main = new MainWindow();
+            main.Show();
+            Close();
+        }
+
+        private void Close_Click(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Application.Current.Shutdown();
         }
 
         private void ShowError(string msg)

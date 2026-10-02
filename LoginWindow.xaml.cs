@@ -10,7 +10,7 @@ namespace soundapp
             InitializeComponent();
             DatabaseManager.InitializeDatabase();
 
-            EmailBox.Text = "Email address";
+            EmailBox.Text = "Enter your email";
             EmailBox.Foreground = System.Windows.Media.Brushes.Gray;
             MouseLeftButtonDown += (s, e) => { if (e.ButtonState == MouseButtonState.Pressed) DragMove(); };
         }
@@ -18,7 +18,7 @@ namespace soundapp
         private void ClearPlaceholder(object sender, RoutedEventArgs e)
         {
             var tb = (System.Windows.Controls.TextBox)sender;
-            if (tb.Text == "Email address")
+            if (tb.Text == "Enter your email")
             {
                 tb.Text = "";
                 tb.Foreground = System.Windows.Media.Brushes.White;
@@ -30,46 +30,26 @@ namespace soundapp
             var tb = (System.Windows.Controls.TextBox)sender;
             if (string.IsNullOrWhiteSpace(tb.Text))
             {
-                tb.Text = "Email address";
+                tb.Text = "Enter your email";
                 tb.Foreground = System.Windows.Media.Brushes.Gray;
             }
         }
-
-        private void TogglePwd_Click(object sender, RoutedEventArgs e) { }
 
         private void LoginBtn_Click(object sender, RoutedEventArgs e)
         {
             string email = EmailBox.Text.Trim();
             string password = PasswordBox.Password;
 
-            if (string.IsNullOrWhiteSpace(email) || email == "Email address")
-            { ShowError("Please enter your email address."); return; }
+            if (string.IsNullOrWhiteSpace(email) || email == "Enter your email")
+            { ShowError("Please enter your email."); return; }
 
             if (string.IsNullOrWhiteSpace(password))
             { ShowError("Please enter your password."); return; }
 
-            // Xác thực với database
             var user = DatabaseManager.Login(email, password);
             if (user == null)
             { ShowError("Incorrect email or password."); return; }
 
-            // Đăng nhập thành công
-            var main = new MainWindow();
-            main.Show();
-            Close();
-        }
-
-        private void MsLoginBtn_Click(object sender, RoutedEventArgs e)
-        {
-            System.Windows.MessageBox.Show(
-                "Để đăng nhập thật bằng Microsoft, bạn cần tạo Azure AD App Registration và dùng thư viện MSAL.NET.\n\n" +
-                "Tính năng này sẽ được kích hoạt khi có Backend Server.", 
-                "Microsoft Login Info", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
-
-        private void GuestLogin_Click(object sender, RoutedEventArgs e)
-        {
-            // Vào thẳng app với tư cách Guest
             var main = new MainWindow();
             main.Show();
             Close();
@@ -82,7 +62,14 @@ namespace soundapp
             Close();
         }
 
-        private void CloseBtn_Click(object sender, RoutedEventArgs e)
+        private void Back_Click(object sender, RoutedEventArgs e)
+        {
+            var main = new MainWindow();
+            main.Show();
+            Close();
+        }
+
+        private void Close_Click(object sender, RoutedEventArgs e)
         {
             System.Windows.Application.Current.Shutdown();
         }

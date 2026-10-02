@@ -121,6 +121,12 @@
     </Window.Resources>
 
     <Grid>
+        <Grid.Background>
+            <RadialGradientBrush Center="0.5,0.5" GradientOrigin="0.5,0.5" RadiusX="0.8" RadiusY="0.8">
+                <GradientStop Color="#180A33" Offset="0"/>
+                <GradientStop Color="#06020c" Offset="1"/>
+            </RadialGradientBrush>
+        </Grid.Background>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="220"/>
             <ColumnDefinition Width="*"/>
@@ -128,15 +134,15 @@
         </Grid.ColumnDefinitions>
 
         <!-- COLUMN 1: SIDEBAR -->
-        <Border Background="#0d0a18" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="0,0,1,0">
+        <Border Background="Transparent" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="0,0,1,0">
             <StackPanel Margin="20,40,20,0">
-                <!-- App Brand -->
-                <StackPanel Orientation="Horizontal" Margin="0,0,0,40">
-                    <TextBlock Text="|||" Foreground="{StaticResource PurpleGradient}" FontSize="24" FontWeight="Bold" Margin="0,0,10,0"/>
-                    <StackPanel>
-                        <TextBlock Text="Sound Studio" FontSize="18" FontWeight="Bold"/>
-                        <TextBlock Text="Feel the Difference" FontSize="11" Foreground="{StaticResource TextMuted}"/>
-                    </StackPanel>
+                <!-- App Menu (Home, Search, Library) -->
+                <StackPanel Margin="0,0,0,40">
+                    <Button Content="Home" Foreground="White" Background="#1Affffff" BorderThickness="0" Padding="15,10" HorizontalContentAlignment="Left" Cursor="Hand" Margin="0,0,0,10">
+                        <Button.Resources><Style TargetType="Border"><Setter Property="CornerRadius" Value="8"/></Style></Button.Resources>
+                    </Button>
+                    <Button Content="Search" Foreground="#8783a2" Background="Transparent" BorderThickness="0" Padding="15,10" HorizontalContentAlignment="Left" Cursor="Hand" Margin="0,0,0,10"/>
+                    <Button Content="Library" Foreground="#8783a2" Background="Transparent" BorderThickness="0" Padding="15,10" HorizontalContentAlignment="Left" Cursor="Hand"/>
                 </StackPanel>
                 
                 <!-- Play History -->
@@ -285,10 +291,17 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Header -->
-            <StackPanel Margin="10,20,10,20">
-                <TextBlock Text="Sound Control" FontSize="26" FontWeight="Bold"/>
-                <TextBlock Text="Manage your audio experience" FontSize="14" Foreground="{StaticResource TextMuted}"/>
+            <!-- Top Right Auth Buttons -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
+                <Button Content="Sign up" Click="SignUp_Click" Style="{StaticResource OutlineBtn}" Margin="0,0,10,0"/>
+                <Button Content="Log in" Click="Login_Click" Style="{StaticResource FilledBtn}"/>
+            </StackPanel>
+
+            <!-- Center Logo -->
+            <StackPanel Grid.Row="1" HorizontalAlignment="Center" Margin="0,20,0,40">
+                <TextBlock Text="|||" Foreground="#9B4DFF" FontSize="42" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                <TextBlock Text="Sound Studio" Foreground="White" FontSize="36" FontWeight="Bold" HorizontalAlignment="Center"/>
+                <TextBlock Text="Feel the Difference" Foreground="#8783a2" FontSize="14" HorizontalAlignment="Center" Margin="0,5,0,0"/>
             </StackPanel>
 
             <!-- YouTube Explorer Panel -->

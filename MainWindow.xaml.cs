@@ -74,6 +74,20 @@ namespace soundapp
             LoadHistory();
         }
 
+        private void SignUp_Click(object sender, RoutedEventArgs e)
+        {
+            var signUp = new SignUpWindow();
+            signUp.Show();
+            this.Close();
+        }
+
+        private void Login_Click(object sender, RoutedEventArgs e)
+        {
+            var login = new LoginWindow();
+            login.Show();
+            this.Close();
+        }
+
         private void LoadPlaylists()
         {
             try { PlaylistList.ItemsSource = DatabaseManager.GetPlaylists(); } catch { }
