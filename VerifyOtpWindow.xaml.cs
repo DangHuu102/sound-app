@@ -7,12 +7,16 @@ namespace soundapp
     {
         private string _expectedOtp;
 
-        public VerifyOtpWindow(string email, string expectedOtp)
+        public VerifyOtpWindow(string email, string expectedOtp, bool showCode = false)
         {
             InitializeComponent();
             _expectedOtp = expectedOtp;
-            DescText.Text = $"We simulated sending a 6-digit code to {email}.\n(For testing, your code is: {expectedOtp})";
-            
+
+            if (showCode)
+                DescText.Text = $"Email chưa được cấu hình. Mã OTP để test:\n👉 {expectedOtp}";
+            else
+                DescText.Text = $"📧 Mã xác thực đã được gửi đến:\n{email}\n\nVui lòng kiểm tra hộp thư (kể cả Spam).";
+
             OtpBox.Focus();
             MouseLeftButtonDown += (s, e) => { if (e.ButtonState == MouseButtonState.Pressed) DragMove(); };
         }

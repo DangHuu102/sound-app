@@ -39,7 +39,7 @@ namespace soundapp
             }
         }
 
-        private void SignUpBtn_Click(object sender, RoutedEventArgs e)
+        private async void SignUpBtn_Click(object sender, RoutedEventArgs e)
         {
             string name = NameBox.Text.Trim();
             string email = EmailBox.Text.Trim();
@@ -59,13 +59,41 @@ namespace soundapp
             { ShowError("Passwords do not match."); return; }
 
             string otpCode = new System.Random().Next(100000, 999999).ToString();
-            var otpDialog = new VerifyOtpWindow(email, otpCode) { Owner = this };
+
+            // Thử gửi email thật
+            if (EmailService.IsConfigured)
+            {
+                // Hiện trạng thái đang gửi
+                ErrorText.Foreground = System.Windows.Media.Brushes.CornflowerBlue;
+                ErrorText.Text = $"Đang gửi mã xác thực đến {email}...";
+                ErrorText.Visibility = System.Windows.Visibility.Visible;
+                SignUpBtn.IsEnabled = false;
+
+                bool sent = await EmailService.SendOtpEmailAsync(email, otpCode);
+                SignUpBtn.IsEnabled = true;
+                ErrorText.Foreground = System.Windows.Media.Brushes.OrangeRed;
+                ErrorText.Visibility = System.Windows.Visibility.Collapsed;
+
+                if (!sent)
+                {
+                    ShowError("Không gửi được email. Kiểm tra lại cấu hình SMTP hoặc kết nối mạng.");
+                    return;
+                }
+
+                System.Windows.MessageBox.Show(
+                    $"📧 Mã xác thực đã được gửi đến:\n{email}\n\nVui lòng kiểm tra hộp thư (kể cả Spam).",
+                    "Email đã gửi", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+            }
+
+            // Mở cửa sổ nhập OTP
+            var otpDialog = new VerifyOtpWindow(email, otpCode,
+                showCode: !EmailService.IsConfigured) { Owner = this };
 
             if (otpDialog.ShowDialog() == true)
             {
                 bool success = DatabaseManager.Register(email, password, name);
                 if (!success)
-                { ShowError("This email is already registered."); return; }
+                { ShowError("Email này đã được đăng ký."); return; }
 
                 GoToMain();
             }
