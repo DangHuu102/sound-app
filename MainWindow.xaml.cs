@@ -6,6 +6,7 @@ using Forms = System.Windows.Forms;
 using YoutubeExplode;
 using YoutubeExplode.Common;
 using YoutubeExplode.Videos.Streams;
+using NAudio.CoreAudioApi;
 
 namespace soundapp
 {
@@ -17,6 +18,8 @@ namespace soundapp
         private Forms.NotifyIcon _notifyIcon = null!;
         private string? _soundFilePath;
         private string? _currentThumbnailUrl;
+        private MMDevice? _audioDevice;
+        private bool _isUpdatingSlider = false;
 
         public MainWindow()
         {
@@ -27,6 +30,22 @@ namespace soundapp
             LoadPlaylists();
             CurrentFileText.Text = "Ready to play";
             SetupTrayIcon();
+            InitAudioDevice();
+        }
+
+        private void InitAudioDevice()
+        {
+            try
+            {
+                var enumerator = new MMDeviceEnumerator();
+                _audioDevice = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+
+                // Đồng bộ slider với volume hiện tại của Windows
+                _isUpdatingSlider = true;
+                VolumeSlider.Value = _audioDevice.AudioEndpointVolume.MasterVolumeLevelScalar;
+                _isUpdatingSlider = false;
+            }
+            catch { }
         }
 
         private void SetupTrayIcon()
@@ -138,7 +157,43 @@ namespace soundapp
 
         private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            if (_isUpdatingSlider) return;
+
+            // Điều chỉnh âm lượng Windows thực sự (0.0 - 1.0)
+            try
+            {
+                if (_audioDevice != null)
+                    _audioDevice.AudioEndpointVolume.MasterVolumeLevelScalar = (float)e.NewValue;
+            }
+            catch { }
+
+            // Cũng set cho MediaPlayer nội bộ
             _mediaPlayer.Volume = e.NewValue;
+
+            // Cập nhật nhãn % hiển thị bên cạnh slider
+            var pct = (int)(e.NewValue * 100);
+            if (VolumePercentText != null)
+                VolumePercentText.Text = pct + "%";
+        }
+
+        private void MuteBtn_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (_audioDevice == null) return;
+                bool isMuted = _audioDevice.AudioEndpointVolume.Mute;
+                _audioDevice.AudioEndpointVolume.Mute = !isMuted;
+
+                // Cập nhật tooltip/tag để biết trạng thái
+                MuteBtn.ToolTip = (!isMuted) ? "Unmute" : "Mute";
+
+                // Thay đổi nội dung nút bằng cách rebuild template content
+                var tb = (System.Windows.Controls.TextBlock)((System.Windows.Controls.Border)MuteBtn.Template.FindName("PART_Root", MuteBtn) ?? new System.Windows.Controls.Border()).Child;
+                // Đơn giản hơn: dùng Tag để track state
+                MuteBtn.Tag = !isMuted;
+                VolumePercentText.Text = (!isMuted) ? "🔇 Muted" : ((int)(VolumeSlider.Value * 100)) + "%";
+            }
+            catch { }
         }
 
         private async void LoadYoutubeButton_Click(object sender, RoutedEventArgs e)
