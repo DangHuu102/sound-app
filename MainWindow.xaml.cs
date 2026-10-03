@@ -184,14 +184,8 @@ namespace soundapp
                 bool isMuted = _audioDevice.AudioEndpointVolume.Mute;
                 _audioDevice.AudioEndpointVolume.Mute = !isMuted;
 
-                // Cập nhật tooltip/tag để biết trạng thái
-                MuteBtn.ToolTip = (!isMuted) ? "Unmute" : "Mute";
-
-                // Thay đổi nội dung nút bằng cách rebuild template content
-                var tb = (System.Windows.Controls.TextBlock)((System.Windows.Controls.Border)MuteBtn.Template.FindName("PART_Root", MuteBtn) ?? new System.Windows.Controls.Border()).Child;
-                // Đơn giản hơn: dùng Tag để track state
-                MuteBtn.Tag = !isMuted;
-                VolumePercentText.Text = (!isMuted) ? "🔇 Muted" : ((int)(VolumeSlider.Value * 100)) + "%";
+                // Dùng Tag để Trigger trong XAML tự đổi icon & màu
+                MuteBtn.Tag = (!isMuted) ? "muted" : null;
             }
             catch { }
         }

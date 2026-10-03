@@ -390,12 +390,30 @@
                         <TextBlock x:Name="VolumePercentText" Grid.Column="2" Text="100%"
                                    Foreground="{StaticResource TextMuted}" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                         <!-- Mute Button -->
-                        <Button Grid.Column="3" x:Name="MuteBtn" Click="MuteBtn_Click" ToolTip="Mute/Unmute" Margin="8,0,0,0">
+                        <Button Grid.Column="3" x:Name="MuteBtn" Click="MuteBtn_Click"
+                                ToolTip="Mute/Unmute" Margin="8,0,0,0"
+                                Background="Transparent" BorderThickness="0" Cursor="Hand"
+                                Width="32" Height="32">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
-                                    <Border Background="Transparent" CornerRadius="5" Padding="4">
-                                        <TextBlock x:Name="MuteIcon" Text="🔊" FontSize="18"/>
+                                    <Border Background="Transparent" CornerRadius="6" Padding="4">
+                                        <TextBlock x:Name="PART_Icon"
+                                                   Text="&#xE767;"
+                                                   FontFamily="Segoe MDL2 Assets"
+                                                   FontSize="16"
+                                                   Foreground="#8783a2"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"/>
                                     </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="PART_Icon" Property="Foreground" Value="White"/>
+                                        </Trigger>
+                                        <Trigger Property="Tag" Value="muted">
+                                            <Setter TargetName="PART_Icon" Property="Text" Value="&#xE74F;"/>
+                                            <Setter TargetName="PART_Icon" Property="Foreground" Value="#ff5555"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
                                 </ControlTemplate>
                             </Button.Template>
                         </Button>
