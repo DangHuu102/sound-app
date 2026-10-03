@@ -135,16 +135,37 @@ namespace soundapp
             settings.ShowDialog();
         }
 
+        private bool _isPlaying = false;
+
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!string.IsNullOrEmpty(_soundFilePath))
+            if (string.IsNullOrEmpty(_soundFilePath)) return;
+
+            if (_isPlaying)
+            {
+                _mediaPlayer.Pause();
+                _isPlaying = false;
+                PlayPauseBtn.Tag = "paused";
+                YoutubeStatusText.Text = "⏸ Paused";
+            }
+            else
+            {
                 _mediaPlayer.Play();
+                _isPlaying = true;
+                PlayPauseBtn.Tag = "playing";
+                YoutubeStatusText.Text = $"▶ {CurrentFileText.Text}";
+            }
         }
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrEmpty(_soundFilePath))
+            {
                 _mediaPlayer.Stop();
+                _isPlaying = false;
+                PlayPauseBtn.Tag = "paused";
+                YoutubeStatusText.Text = "⏹ Stopped";
+            }
         }
 
         private void BrowseButton_Click(object sender, RoutedEventArgs e)
@@ -245,6 +266,8 @@ namespace soundapp
                 _mediaPlayer.Open(new Uri(_soundFilePath));
                 _mediaPlayer.Volume = VolumeSlider?.Value ?? 1.0;
                 _mediaPlayer.Play();
+                _isPlaying = true;
+                PlayPauseBtn.Tag = "playing";
             }
             catch (Exception ex)
             {

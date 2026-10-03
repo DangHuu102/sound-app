@@ -479,9 +479,73 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Button Grid.Column="1" Content="&#xE100;" FontFamily="Segoe UI Symbol" Style="{StaticResource HeaderBtn}" Background="Transparent" Margin="0,0,15,0" Click="StopButton_Click"/>
-                        <Button Grid.Column="2" Content="&#xE102;" FontFamily="Segoe UI Symbol" Style="{StaticResource PlayBtn}" Click="PlayButton_Click"/>
-                        <Button Grid.Column="3" Content="&#xE142;" FontFamily="Segoe UI Symbol" Style="{StaticResource HeaderBtn}" Background="Transparent" Margin="15,0,0,0" Click="BrowseButton_Click"/>
+
+                        <!-- Stop -->
+                        <Button Grid.Column="1" Margin="0,0,15,0" Click="StopButton_Click" ToolTip="Stop" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="#25213b" CornerRadius="10" Padding="14,10" x:Name="bg">
+                                        <TextBlock Text="&#xE100;" FontFamily="Segoe UI Symbol" FontSize="16"
+                                                   Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bg" Property="Background" Value="#3a3155"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <!-- Play / Pause toggle -->
+                        <Button Grid.Column="2" x:Name="PlayPauseBtn" Click="PlayButton_Click" ToolTip="Play / Pause" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Width="54" Height="54" CornerRadius="27" x:Name="bg">
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                <GradientStop Color="#7F00FF" Offset="0"/>
+                                                <GradientStop Color="#E100FF" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                        <Border.Effect>
+                                            <DropShadowEffect Color="#7F00FF" BlurRadius="18" ShadowDepth="0"/>
+                                        </Border.Effect>
+                                        <TextBlock x:Name="PlayIcon" Text="&#xE102;" FontFamily="Segoe UI Symbol"
+                                                   FontSize="20" Foreground="White"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bg" Property="Opacity" Value="0.85"/>
+                                        </Trigger>
+                                        <Trigger Property="Tag" Value="paused">
+                                            <Setter TargetName="PlayIcon" Property="Text" Value="&#xE102;"/>
+                                        </Trigger>
+                                        <Trigger Property="Tag" Value="playing">
+                                            <Setter TargetName="PlayIcon" Property="Text" Value="&#xE103;"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+
+                        <!-- Browse file -->
+                        <Button Grid.Column="3" Margin="15,0,0,0" Click="BrowseButton_Click" ToolTip="Browse local file" Cursor="Hand">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border Background="#25213b" CornerRadius="10" Padding="14,10" x:Name="bg">
+                                        <TextBlock Text="&#xE142;" FontFamily="Segoe UI Symbol" FontSize="16"
+                                                   Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bg" Property="Background" Value="#3a3155"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
                     </Grid>
                 </StackPanel>
             </Border>
