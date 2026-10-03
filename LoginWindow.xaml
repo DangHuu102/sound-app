@@ -105,19 +105,19 @@
                 <TextBlock Text="Sound Studio" Foreground="White" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
                 <TextBlock Text="Feel the Difference" Foreground="{StaticResource TextMuted}" FontSize="12" HorizontalAlignment="Center" Margin="0,0,0,30"/>
 
-                <!-- Email -->
-                <TextBlock Text="Email" Foreground="White" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,6"/>
+                <!-- Username or Email -->
+                <TextBlock Text="Username or Email" Foreground="White" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,6"/>
                 <Grid Margin="0,0,0,16">
                     <TextBox x:Name="EmailBox" Style="{StaticResource GlassInput}" 
-                             Tag="Enter your email" GotFocus="ClearPlaceholder" LostFocus="RestorePlaceholder"/>
-                    <TextBlock Text="✉" Foreground="#8783a2" FontSize="16" Margin="15,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" IsHitTestVisible="False"/>
+                             Tag="Enter your username or email" GotFocus="ClearPlaceholder" LostFocus="RestorePlaceholder" Height="43" VerticalAlignment="Top" Margin="0,24,0,0"/>
+                    <TextBlock Text="👤" Foreground="#8783a2" FontSize="14" Margin="10,36,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" IsHitTestVisible="False"/>
                 </Grid>
 
                 <!-- Password -->
                 <TextBlock Text="Password" Foreground="White" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,6"/>
                 <Grid Margin="0,0,0,12">
-                    <PasswordBox x:Name="PasswordBox" Style="{StaticResource GlassPwd}"/>
-                    <TextBlock Text="🔒" Foreground="#8783a2" FontSize="14" Margin="15,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" IsHitTestVisible="False"/>
+                    <PasswordBox x:Name="PasswordBox" Style="{StaticResource GlassPwd}" Height="46" VerticalAlignment="Top"/>
+                    <TextBlock Text="🔒" Foreground="#8783a2" FontSize="14" Margin="10,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" IsHitTestVisible="False"/>
                     <Button Content="👁" Background="Transparent" BorderThickness="0" Foreground="#8783a2" 
                             HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" Cursor="Hand"/>
                 </Grid>
@@ -153,7 +153,7 @@
                 <!-- Sign up link -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
                     <TextBlock Text="Don't have an account? " Foreground="{StaticResource TextMuted}" FontSize="12"/>
-                    <Button Content="Sign up" Background="Transparent" BorderThickness="0" Foreground="#9B4DFF" FontSize="12" Cursor="Hand" Click="SignUpLink_Click"/>
+                    <Button Content="Sign up" Background="Transparent" BorderThickness="0" Foreground="#9B4DFF" FontSize="12" Cursor="Hand" Click="SignUpLink_Click" RenderTransformOrigin="0.523,0.552" Height="35" Width="62"/>
                 </StackPanel>
             </StackPanel>
         </Border>

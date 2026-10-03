@@ -88,12 +88,15 @@ namespace soundapp
             catch { return false; } // Email đã tồn tại
         }
 
-        public static User? Login(string email, string password)
+        public static User? Login(string emailOrUsername, string password)
         {
             using var connection = new SqliteConnection(GetConnectionString());
+            // Cho phép đăng nhập bằng email HOẶC username (DisplayName)
             return connection.QueryFirstOrDefault<User>(
-                "SELECT * FROM Users WHERE Email = @Email AND PasswordHash = @Hash",
-                new { Email = email.ToLower(), Hash = HashPassword(password) });
+                @"SELECT * FROM Users 
+                  WHERE (LOWER(Email) = LOWER(@Input) OR LOWER(DisplayName) = LOWER(@Input))
+                  AND PasswordHash = @Hash",
+                new { Input = emailOrUsername.Trim(), Hash = HashPassword(password) });
         }
 
         public static void AddHistory(string title, string url, string thumbnailUrl)

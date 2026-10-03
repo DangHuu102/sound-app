@@ -10,7 +10,7 @@ namespace soundapp
             InitializeComponent();
             DatabaseManager.InitializeDatabase();
 
-            EmailBox.Text = "Enter your email";
+            EmailBox.Text = "Enter your username or email";
             EmailBox.Foreground = System.Windows.Media.Brushes.Gray;
             MouseLeftButtonDown += (s, e) => { if (e.ButtonState == MouseButtonState.Pressed) DragMove(); };
         }
@@ -18,7 +18,7 @@ namespace soundapp
         private void ClearPlaceholder(object sender, RoutedEventArgs e)
         {
             var tb = (System.Windows.Controls.TextBox)sender;
-            if (tb.Text == "Enter your email")
+            if (tb.Text == "Enter your username or email")
             {
                 tb.Text = "";
                 tb.Foreground = System.Windows.Media.Brushes.White;
@@ -30,27 +30,26 @@ namespace soundapp
             var tb = (System.Windows.Controls.TextBox)sender;
             if (string.IsNullOrWhiteSpace(tb.Text))
             {
-                tb.Text = "Enter your email";
+                tb.Text = "Enter your username or email";
                 tb.Foreground = System.Windows.Media.Brushes.Gray;
             }
         }
 
         private void LoginBtn_Click(object sender, RoutedEventArgs e)
         {
-            string email = EmailBox.Text.Trim();
+            string input = EmailBox.Text.Trim();
             string password = PasswordBox.Password;
 
-            if (string.IsNullOrWhiteSpace(email) || email == "Enter your email")
-            { ShowError("Please enter your email."); return; }
+            if (string.IsNullOrWhiteSpace(input) || input == "Enter your username or email")
+            { ShowError("Please enter your username or email."); return; }
 
             if (string.IsNullOrWhiteSpace(password))
             { ShowError("Please enter your password."); return; }
 
-            var user = DatabaseManager.Login(email, password);
+            var user = DatabaseManager.Login(input, password);
             if (user == null)
-            { ShowError("Incorrect email or password."); return; }
+            { ShowError("Incorrect username/email or password."); return; }
 
-            // Lấy MainWindow đang ẩn và hiện lại
             GoToMain();
         }
 
