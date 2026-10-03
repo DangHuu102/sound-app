@@ -78,14 +78,14 @@ namespace soundapp
         {
             var signUp = new SignUpWindow();
             signUp.Show();
-            this.Close();
+            this.Hide();
         }
 
         private void Login_Click(object sender, RoutedEventArgs e)
         {
             var login = new LoginWindow();
             login.Show();
-            this.Close();
+            this.Hide();
         }
 
         private void LoadPlaylists()
@@ -106,7 +106,7 @@ namespace soundapp
         private void MiniPlayerBtn_Click(object sender, RoutedEventArgs e)
         {
             var miniPlayer = new MiniPlayerWindow(this, CurrentFileText.Text, _currentThumbnailUrl ?? "");
-            Hide();
+            this.Hide();
             miniPlayer.Show();
         }
 

@@ -66,11 +66,14 @@
     <Grid>
         <!-- Top Left Back Button -->
         <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="20">
-            <Button Content="←" Click="Back_Click" Background="Transparent" Foreground="White" BorderBrush="#2Affffff" BorderThickness="1" 
-                    Width="36" Height="36" FontSize="18" Cursor="Hand" Margin="0,0,15,0">
-                <Button.Resources>
-                    <Style TargetType="Border"><Setter Property="CornerRadius" Value="18"/></Style>
-                </Button.Resources>
+            <Button Click="Back_Click" Width="36" Height="36" Cursor="Hand" Margin="0,0,15,0">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="Transparent" BorderBrush="#2Affffff" BorderThickness="1" CornerRadius="18" Width="36" Height="36">
+                            <TextBlock Text="←" Foreground="White" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
             </Button>
             <TextBlock Text="||| Sound Studio" Foreground="White" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
         </StackPanel>

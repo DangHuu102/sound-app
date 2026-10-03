@@ -50,28 +50,43 @@ namespace soundapp
             if (user == null)
             { ShowError("Incorrect email or password."); return; }
 
-            var main = new MainWindow();
-            main.Show();
-            Close();
+            // Lấy MainWindow đang ẩn và hiện lại
+            GoToMain();
         }
 
         private void SignUpLink_Click(object sender, RoutedEventArgs e)
         {
             var signUp = new SignUpWindow();
             signUp.Show();
-            Close();
+            this.Hide();
         }
 
         private void Back_Click(object sender, RoutedEventArgs e)
         {
-            var main = new MainWindow();
-            main.Show();
-            Close();
+            GoToMain();
         }
 
         private void Close_Click(object sender, RoutedEventArgs e)
         {
             System.Windows.Application.Current.Shutdown();
+        }
+
+        private void GoToMain()
+        {
+            // Tìm MainWindow đang ẩn và show lại, tránh tạo instance mới
+            foreach (Window w in System.Windows.Application.Current.Windows)
+            {
+                if (w is MainWindow mw)
+                {
+                    mw.Show();
+                    this.Hide();
+                    return;
+                }
+            }
+            // Nếu không tìm thấy thì tạo mới
+            var main = new MainWindow();
+            main.Show();
+            this.Hide();
         }
 
         private void ShowError(string message)

@@ -67,9 +67,7 @@ namespace soundapp
                 if (!success)
                 { ShowError("This email is already registered."); return; }
 
-                var main = new MainWindow();
-                main.Show();
-                Close();
+                GoToMain();
             }
         }
 
@@ -77,19 +75,33 @@ namespace soundapp
         {
             var login = new LoginWindow();
             login.Show();
-            Close();
+            this.Hide();
         }
 
         private void Back_Click(object sender, RoutedEventArgs e)
         {
-            var main = new MainWindow();
-            main.Show();
-            Close();
+            GoToMain();
         }
 
         private void Close_Click(object sender, RoutedEventArgs e)
         {
             System.Windows.Application.Current.Shutdown();
+        }
+
+        private void GoToMain()
+        {
+            foreach (Window w in System.Windows.Application.Current.Windows)
+            {
+                if (w is MainWindow mw)
+                {
+                    mw.Show();
+                    this.Hide();
+                    return;
+                }
+            }
+            var main = new MainWindow();
+            main.Show();
+            this.Hide();
         }
 
         private void ShowError(string msg)
