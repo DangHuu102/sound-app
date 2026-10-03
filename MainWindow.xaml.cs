@@ -129,6 +129,12 @@ namespace soundapp
             miniPlayer.Show();
         }
 
+        private void EmailSettingsBtn_Click(object sender, RoutedEventArgs e)
+        {
+            var settings = new SmtpSettingsWindow { Owner = this };
+            settings.ShowDialog();
+        }
+
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrEmpty(_soundFilePath))
