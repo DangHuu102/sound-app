@@ -12,6 +12,10 @@ namespace soundapp
 
             EmailBox.Text = "Enter your username or email";
             EmailBox.Foreground = System.Windows.Media.Brushes.Gray;
+
+            EmailBox.PreviewMouseLeftButtonDown += (s, e) => EmailBox.Focus();
+            PasswordBox.PreviewMouseLeftButtonDown += (s, e) => PasswordBox.Focus();
+
             MouseLeftButtonDown += (s, e) => 
             { 
                 if (e.OriginalSource is System.Windows.DependencyObject depObj)

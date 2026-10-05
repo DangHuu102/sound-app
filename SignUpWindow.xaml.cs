@@ -16,6 +16,12 @@ namespace soundapp
             EmailBox.Foreground = System.Windows.Media.Brushes.Gray;
             EmailBox.Tag = "Enter your email";
 
+            NameBox.PreviewMouseLeftButtonDown += (s, e) => NameBox.Focus();
+            EmailBox.PreviewMouseLeftButtonDown += (s, e) => EmailBox.Focus();
+            PasswordBox.PreviewMouseLeftButtonDown += (s, e) => PasswordBox.Focus();
+            UniversityBox.PreviewMouseLeftButtonDown += (s, e) => UniversityBox.Focus();
+            StudentIdBox.PreviewMouseLeftButtonDown += (s, e) => StudentIdBox.Focus();
+
             MouseLeftButtonDown += (s, e) => 
             { 
                 if (e.OriginalSource is System.Windows.DependencyObject depObj)

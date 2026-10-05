@@ -189,29 +189,20 @@
                         </Button.Style>
                     </Button>
                 </Grid>
-                <ListBox x:Name="HistoryList" Background="Transparent" BorderThickness="0" Foreground="{StaticResource TextMuted}" 
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                         ScrollViewer.VerticalScrollBarVisibility="Auto">
-                    <ListBox.ItemContainerStyle>
-                        <Style TargetType="ListBoxItem">
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="ListBoxItem">
-                                        <Border Padding="10,8" CornerRadius="5" Background="Transparent" x:Name="ItemBorder">
-                                            <ContentPresenter/>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="ItemBorder" Property="Background" Value="#251b4d"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                            <Setter Property="Cursor" Value="Hand"/>
-                        </Style>
-                    </ListBox.ItemContainerStyle>
-                    <ListBox.ItemTemplate>
+                <ItemsControl x:Name="HistoryList" Background="Transparent" BorderThickness="0" Foreground="{StaticResource TextMuted}">
+                    <ItemsControl.Template>
+                        <ControlTemplate TargetType="ItemsControl">
+                            <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                                <ItemsPresenter />
+                            </ScrollViewer>
+                        </ControlTemplate>
+                    </ItemsControl.Template>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Button Click="HistoryItem_Click" Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" Cursor="Hand">
                                 <Button.Template>
@@ -228,8 +219,8 @@
                                 </StackPanel>
                             </Button>
                         </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
 
                 <!-- Playlist Section -->
                 <Grid Margin="0,20,0,8">
@@ -598,40 +589,44 @@
                             <TextBlock Text="Gợi ý tương tự" Foreground="#8783a2" Cursor="Hand"/>
                         </StackPanel>
                         
-                        <ListBox x:Name="QueueList" Grid.Row="1" Background="Transparent" BorderThickness="0" Foreground="White"
-                                 ScrollViewer.VerticalScrollBarVisibility="Auto">
-                            <ListBox.ItemContainerStyle>
-                                <Style TargetType="ListBoxItem">
-                                    <Setter Property="Template">
-                                        <Setter.Value>
-                                            <ControlTemplate TargetType="ListBoxItem">
-                                                <Button Click="QueueItem_Click" Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" Cursor="Hand">
-                                                    <Button.Template>
-                                                        <ControlTemplate TargetType="Button">
-                                                            <Border Padding="5" Margin="0,0,0,5" CornerRadius="5" Background="#251b4d" x:Name="ItemBorder">
-                                                                <StackPanel Orientation="Horizontal">
-                                                                    <Image Source="{Binding ThumbnailUrl}" Width="40" Height="40" Stretch="UniformToFill" Margin="0,0,10,0"/>
-                                                                    <StackPanel VerticalAlignment="Center">
-                                                                        <TextBlock Text="{Binding Title}" MaxWidth="180" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="White"/>
-                                                                        <TextBlock Text="{Binding ArtistName}" MaxWidth="180" TextTrimming="CharacterEllipsis" FontSize="11" Foreground="#8783a2"/>
-                                                                    </StackPanel>
-                                                                </StackPanel>
-                                                            </Border>
-                                                            <ControlTemplate.Triggers>
-                                                                <Trigger Property="IsMouseOver" Value="True">
-                                                                    <Setter TargetName="ItemBorder" Property="Background" Value="#3a2a7a"/>
-                                                                </Trigger>
-                                                            </ControlTemplate.Triggers>
-                                                        </ControlTemplate>
-                                                    </Button.Template>
-                                                </Button>
+                        <ItemsControl x:Name="QueueList" Grid.Row="1" Background="Transparent" BorderThickness="0" Foreground="White">
+                            <ItemsControl.Template>
+                                <ControlTemplate TargetType="ItemsControl">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <ItemsPresenter />
+                                    </ScrollViewer>
+                                </ControlTemplate>
+                            </ItemsControl.Template>
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Click="QueueItem_Click" Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" Cursor="Hand">
+                                        <Button.Template>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border Padding="5" Margin="0,0,0,5" CornerRadius="5" Background="#251b4d" x:Name="ItemBorder">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Image Source="{Binding ThumbnailUrl}" Width="40" Height="40" Stretch="UniformToFill" Margin="0,0,10,0"/>
+                                                        <StackPanel VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding Title}" MaxWidth="180" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="White"/>
+                                                            <TextBlock Text="{Binding ArtistName}" MaxWidth="180" TextTrimming="CharacterEllipsis" FontSize="11" Foreground="#8783a2"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="ItemBorder" Property="Background" Value="#3a2a7a"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
                                             </ControlTemplate>
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Setter Property="Cursor" Value="Hand"/>
-                                </Style>
-                            </ListBox.ItemContainerStyle>
-                        </ListBox>
+                                        </Button.Template>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </Grid>
                 </StackPanel>
             </Border>
