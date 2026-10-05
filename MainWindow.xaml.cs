@@ -18,6 +18,7 @@ namespace soundapp
         private Forms.NotifyIcon _notifyIcon = null!;
         private string? _soundFilePath;
         private string? _currentThumbnailUrl;
+        private string? _currentYoutubeUrl;
         private AudioDeviceService? _audioService;
         private bool _isUpdatingSlider = false;
         private CancellationTokenSource? _playCts;
@@ -173,6 +174,7 @@ namespace soundapp
 
                     _soundFilePath = streamInfo.Url;
                     _currentThumbnailUrl = video.Thumbnails.GetWithHighestResolution().Url;
+                    _currentYoutubeUrl = url;
 
                     try
                     {
@@ -350,6 +352,66 @@ namespace soundapp
                 _isPlaying = false;
                 PlayPauseBtn.Tag = "paused";
                 YoutubeStatusText.Text = "Đã tải file. Bấm Play để phát.";
+            }
+        }
+
+        private async void DownloadButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_currentYoutubeUrl))
+            {
+                ShowNotification("Vui lòng tải một bài hát từ YouTube trước khi tải xuống!", "warning");
+                return;
+            }
+
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Lưu Audio (MP3)",
+                Filter = "Audio Files (*.mp3)|*.mp3",
+                FileName = CurrentFileText.Text + ".mp3"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                string savePath = dialog.FileName;
+                string urlToDownload = _currentYoutubeUrl;
+
+                DownloadProgressGrid.Visibility = Visibility.Visible;
+                DownloadProgressBar.Value = 0;
+                DownloadProgressText.Text = "0%";
+
+                try
+                {
+                    var video = await _youtube.Videos.GetAsync(urlToDownload);
+                    var manifest = await _youtube.Videos.Streams.GetManifestAsync(video.Id);
+                    var streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+
+                    if (streamInfo == null)
+                    {
+                        ShowNotification("Lỗi: Không tìm thấy link tải!", "error");
+                        DownloadProgressGrid.Visibility = Visibility.Collapsed;
+                        return;
+                    }
+
+                    var progress = new Progress<double>(p =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            DownloadProgressBar.Value = p * 100;
+                            DownloadProgressText.Text = $"{(int)(p * 100)}%";
+                        });
+                    });
+
+                    await _youtube.Videos.Streams.DownloadAsync(streamInfo, savePath, progress);
+                    ShowNotification("✅ Tải xuống thành công!", "info");
+                }
+                catch (Exception ex)
+                {
+                    ShowNotification($"Lỗi tải xuống: {ex.Message}", "error");
+                }
+                finally
+                {
+                    DownloadProgressGrid.Visibility = Visibility.Collapsed;
+                }
             }
         }
 
