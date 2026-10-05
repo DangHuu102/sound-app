@@ -30,7 +30,8 @@ namespace soundapp
                     "remix", "lofi", "vinahouse", "nonstop", "mashup", 
                     "phonk", "trap", "drill", "edm", "house", 
                     "acoustic", "chill", "synthwave", "cyberpunk", 
-                    "slowed", "reverb", "sped up", "nightcore", "tiktok", "cover" 
+                    "slowed", "reverb", "sped up", "nightcore", "tiktok", "cover",
+                    "piano", "guitar", "violin", "instrumental", "orchestral", "karaoke", "beat", "không lời"
                 };
 
                 // Trích xuất tất cả các vibe có xuất hiện trong tiêu đề
