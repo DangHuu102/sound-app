@@ -575,6 +575,42 @@
                         <ProgressBar x:Name="DownloadProgressBar" Height="4" Background="#25213b" Foreground="#9B4DFF" BorderThickness="0" Minimum="0" Maximum="100"/>
                         <TextBlock x:Name="DownloadProgressText" Grid.Column="1" Text="0%" Foreground="#8783a2" FontSize="10" Margin="10,0,0,0" VerticalAlignment="Center"/>
                     </Grid>
+                    
+                    <!-- Up Next & Related Panel -->
+                    <Grid Margin="0,20,0,0" VerticalAlignment="Stretch" MinHeight="150">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                            <TextBlock Text="Đợi phát (Queue)" Foreground="White" FontWeight="Bold" Margin="0,0,15,0" Cursor="Hand"/>
+                            <TextBlock Text="Gợi ý tương tự" Foreground="#8783a2" Cursor="Hand"/>
+                        </StackPanel>
+                        
+                        <ListBox x:Name="QueueList" Grid.Row="1" Background="Transparent" BorderThickness="0" Foreground="White"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ListBoxItem">
+                                                <Border Padding="5" Margin="0,0,0,5" CornerRadius="5" Background="#251b4d">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Image Source="{Binding ThumbnailUrl}" Width="40" Height="40" Stretch="UniformToFill" Margin="0,0,10,0"/>
+                                                        <StackPanel VerticalAlignment="Center">
+                                                            <TextBlock Text="{Binding Title}" MaxWidth="180" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="White"/>
+                                                            <TextBlock Text="{Binding ArtistName}" MaxWidth="180" TextTrimming="CharacterEllipsis" FontSize="11" Foreground="#8783a2"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                        </ListBox>
+                    </Grid>
                 </StackPanel>
             </Border>
         </Grid>

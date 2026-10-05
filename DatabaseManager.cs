@@ -51,20 +51,82 @@ namespace soundapp
                 connection.Open();
                 connection.Execute("PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;");
                 connection.Execute(@"
-                    CREATE TABLE IF NOT EXISTS PlayHistory (
-                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        Title TEXT NOT NULL,
-                        Url TEXT NOT NULL,
-                        ThumbnailUrl TEXT NOT NULL,
-                        CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
-                    );
                     CREATE TABLE IF NOT EXISTS Users (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         Email TEXT NOT NULL UNIQUE,
                         PasswordHash TEXT NOT NULL,
                         DisplayName TEXT NOT NULL,
                         CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+                    );
+                    CREATE TABLE IF NOT EXISTS Tracks (
+                        Id TEXT PRIMARY KEY,
+                        Title TEXT NOT NULL,
+                        ArtistName TEXT,
+                        YoutubeUrl TEXT UNIQUE,
+                        ThumbnailUrl TEXT
+                    );
+                    CREATE TABLE IF NOT EXISTS StreamCache (
+                        YoutubeUrl TEXT PRIMARY KEY,
+                        StreamUrl TEXT NOT NULL,
+                        ExpiresAt DATETIME NOT NULL
+                    );
+                    CREATE TABLE IF NOT EXISTS PlayHistory (
+                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        Title TEXT NOT NULL,
+                        Url TEXT NOT NULL,
+                        ThumbnailUrl TEXT NOT NULL,
+                        CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
                     );");
+            }
+        }
+
+        public static (string Artist, string SongTitle) ParseMetadata(string youtubeTitle)
+        {
+            // 1. Loại bỏ các noise tags: (Official Music Video), [MV], (Lyric Video), 4K...
+            string cleaned = System.Text.RegularExpressions.Regex.Replace(
+                youtubeTitle, 
+                @"\s*[\[\(](official.*?|audio|mv|lyrics?|visualizer|live|4k|hd|remix)[\)\]]", 
+                "", 
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+            cleaned = System.Text.RegularExpressions.Regex.Replace(
+                cleaned, 
+                @"\s*(?://|\||-)\s*(?:OFFICIAL.*?|MV|LYRIC.*?)$", 
+                "", 
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+            // 2. Tách theo dấu " - ", " – ", " | "
+            var parts = cleaned.Split(new[] { " - ", " – ", " | " }, 2, StringSplitOptions.RemoveEmptyEntries);
+
+            if (parts.Length == 2)
+            {
+                return (parts[0].Trim(), parts[1].Trim());
+            }
+            return ("Unknown Artist", cleaned.Trim());
+        }
+
+        public static string? GetValidStreamUrl(string youtubeUrl)
+        {
+            using (var connection = new SqliteConnection(GetConnectionString()))
+            {
+                var cache = connection.QueryFirstOrDefault("SELECT StreamUrl, ExpiresAt FROM StreamCache WHERE YoutubeUrl = @Url", new { Url = youtubeUrl });
+                if (cache != null && cache.ExpiresAt > DateTime.UtcNow)
+                {
+                    return cache.StreamUrl;
+                }
+                return null;
+            }
+        }
+
+        public static void SaveStreamUrl(string youtubeUrl, string streamUrl)
+        {
+            using (var connection = new SqliteConnection(GetConnectionString()))
+            {
+                var expiresAt = DateTime.UtcNow.AddHours(4); // Hạn của Youtube thường là 6h, đặt 4h cho an toàn
+                connection.Execute(@"
+                    INSERT OR REPLACE INTO StreamCache (YoutubeUrl, StreamUrl, ExpiresAt) 
+                    VALUES (@YoutubeUrl, @StreamUrl, @ExpiresAt)", 
+                    new { YoutubeUrl = youtubeUrl, StreamUrl = streamUrl, ExpiresAt = expiresAt });
             }
         }
 
@@ -104,13 +166,22 @@ namespace soundapp
         {
             using (var connection = new SqliteConnection(GetConnectionString()))
             {
+                var meta = ParseMetadata(title);
+                // Lưu vào Tracks
+                connection.Execute(@"
+                    INSERT OR IGNORE INTO Tracks (Id, Title, ArtistName, YoutubeUrl, ThumbnailUrl)
+                    VALUES (@Id, @Title, @ArtistName, @YoutubeUrl, @ThumbnailUrl)",
+                    new { Id = Guid.NewGuid().ToString(), Title = meta.SongTitle, ArtistName = meta.Artist, YoutubeUrl = url, ThumbnailUrl = thumbnailUrl });
+
+                // Lưu vào History
                 connection.Execute("DELETE FROM PlayHistory WHERE Url = @Url", new { Url = url });
                 
                 var insertCmd = @"
                     INSERT INTO PlayHistory (Title, Url, ThumbnailUrl, CreatedAt)
                     VALUES (@Title, @Url, @ThumbnailUrl, @CreatedAt);
                 ";
-                connection.Execute(insertCmd, new { Title = title, Url = url, ThumbnailUrl = thumbnailUrl, CreatedAt = DateTime.Now });
+                // Chú ý: dùng title gốc hoặc title đã parse cho UI
+                connection.Execute(insertCmd, new { Title = meta.SongTitle + "\n" + meta.Artist, Url = url, ThumbnailUrl = thumbnailUrl, CreatedAt = DateTime.Now });
             }
         }
 

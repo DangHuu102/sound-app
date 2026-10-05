@@ -161,19 +161,34 @@ namespace soundapp
 
             try
             {
-                var video = await _youtube.Videos.GetAsync(url, token);
-                var manifest = await _youtube.Videos.Streams.GetManifestAsync(video.Id, token);
-                var streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+                string streamUrl = DatabaseManager.GetValidStreamUrl(url) ?? "";
+                string title = "";
+                string thumbUrl = "";
 
-                if (streamInfo == null || token.IsCancellationRequested) return;
+                // Get minimal video info if we don't have stream or need metadata
+                var video = await _youtube.Videos.GetAsync(url, token);
+                title = video.Title;
+                thumbUrl = video.Thumbnails.GetWithHighestResolution().Url;
+
+                if (string.IsNullOrEmpty(streamUrl))
+                {
+                    var manifest = await _youtube.Videos.Streams.GetManifestAsync(video.Id, token);
+                    var streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+
+                    if (streamInfo == null || token.IsCancellationRequested) return;
+                    streamUrl = streamInfo.Url;
+                    
+                    // Lưu vào cache để dùng lại
+                    DatabaseManager.SaveStreamUrl(url, streamUrl);
+                }
 
                 Dispatcher.Invoke(() =>
                 {
                     _mediaPlayer.Stop();
                     _mediaPlayer.Close();
 
-                    _soundFilePath = streamInfo.Url;
-                    _currentThumbnailUrl = video.Thumbnails.GetWithHighestResolution().Url;
+                    _soundFilePath = streamUrl;
+                    _currentThumbnailUrl = thumbUrl;
                     _currentYoutubeUrl = url;
 
                     try
@@ -188,13 +203,13 @@ namespace soundapp
                     }
                     catch { }
 
-                    CurrentFileText.Text = video.Title;
+                    CurrentFileText.Text = title;
                     _mediaPlayer.Open(new Uri(_soundFilePath));
                     
                     // Thêm history ngầm không block UI
                     System.Threading.Tasks.Task.Run(() => 
                     {
-                        DatabaseManager.AddHistory(video.Title, url, _currentThumbnailUrl);
+                        DatabaseManager.AddHistory(title, url, _currentThumbnailUrl);
                         Dispatcher.Invoke(() => LoadHistory());
                     });
                 });
