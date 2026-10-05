@@ -116,11 +116,18 @@
                     <TextBlock Text="🔒" Foreground="#8783a2" FontSize="14" Margin="15,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" IsHitTestVisible="False"/>
                 </Grid>
 
-                <!-- Confirm Password -->
-                <TextBlock Text="Confirm Password" Foreground="White" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                <!-- University -->
+                <TextBlock Text="University (Trường Đại Học)" Foreground="White" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                <Grid Margin="0,0,0,12">
+                    <TextBox x:Name="UniversityBox" Style="{StaticResource GlassInput}" Tag="Ex: ICTU" GotFocus="ClearPlaceholder" LostFocus="RestorePlaceholder"/>
+                    <TextBlock Text="🎓" Foreground="#8783a2" FontSize="14" Margin="15,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" IsHitTestVisible="False"/>
+                </Grid>
+
+                <!-- Student ID -->
+                <TextBlock Text="Student ID (Mã Sinh Viên)" Foreground="White" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
                 <Grid Margin="0,0,0,15">
-                    <PasswordBox x:Name="ConfirmBox" Style="{StaticResource GlassPwd}"/>
-                    <TextBlock Text="🔒" Foreground="#8783a2" FontSize="14" Margin="15,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" IsHitTestVisible="False"/>
+                    <TextBox x:Name="StudentIdBox" Style="{StaticResource GlassInput}" Tag="Ex: DTC255190009" GotFocus="ClearPlaceholder" LostFocus="RestorePlaceholder"/>
+                    <TextBlock Text="💳" Foreground="#8783a2" FontSize="14" Margin="15,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" IsHitTestVisible="False"/>
                 </Grid>
 
                 <TextBlock x:Name="ErrorText" Foreground="#ff5555" FontSize="12" HorizontalAlignment="Center" Visibility="Collapsed" Margin="0,0,0,10"/>

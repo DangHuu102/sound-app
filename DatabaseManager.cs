@@ -29,6 +29,8 @@ namespace soundapp
         public string Email { get; set; } = "";
         public string PasswordHash { get; set; } = "";
         public string DisplayName { get; set; } = "";
+        public string University { get; set; } = "";
+        public string StudentId { get; set; } = "";
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 
@@ -50,12 +52,19 @@ namespace soundapp
             {
                 connection.Open();
                 connection.Execute("PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;");
+                
+                // Cố gắng thêm cột nếu bảng đã tồn tại (dùng try-catch vì SQLite không có ADD COLUMN IF NOT EXISTS)
+                try { connection.Execute("ALTER TABLE Users ADD COLUMN University TEXT;"); } catch { }
+                try { connection.Execute("ALTER TABLE Users ADD COLUMN StudentId TEXT;"); } catch { }
+
                 connection.Execute(@"
                     CREATE TABLE IF NOT EXISTS Users (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         Email TEXT NOT NULL UNIQUE,
                         PasswordHash TEXT NOT NULL,
                         DisplayName TEXT NOT NULL,
+                        University TEXT,
+                        StudentId TEXT,
                         CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
                     );
                     CREATE TABLE IF NOT EXISTS Tracks (
@@ -138,14 +147,14 @@ namespace soundapp
             return Convert.ToHexString(bytes);
         }
 
-        public static bool Register(string email, string password, string displayName)
+        public static bool Register(string email, string password, string displayName, string university, string studentId)
         {
             try
             {
                 using var connection = new SqliteConnection(GetConnectionString());
                 connection.Execute(
-                    "INSERT INTO Users (Email, PasswordHash, DisplayName) VALUES (@Email, @Hash, @Name)",
-                    new { Email = email.ToLower(), Hash = HashPassword(password), Name = displayName });
+                    "INSERT INTO Users (Email, PasswordHash, DisplayName, University, StudentId) VALUES (@Email, @Hash, @Name, @Uni, @StudentId)",
+                    new { Email = email.ToLower(), Hash = HashPassword(password), Name = displayName, Uni = university, StudentId = studentId });
                 return true;
             }
             catch { return false; } // Email đã tồn tại

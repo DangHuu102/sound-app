@@ -44,7 +44,8 @@ namespace soundapp
             string name = NameBox.Text.Trim();
             string email = EmailBox.Text.Trim();
             string password = PasswordBox.Password;
-            string confirm = ConfirmBox.Password;
+            string university = UniversityBox.Text.Trim();
+            string studentId = StudentIdBox.Text.Trim();
 
             if (string.IsNullOrWhiteSpace(name) || name == "Enter your username")
             { ShowError("Please enter your username."); return; }
@@ -55,8 +56,11 @@ namespace soundapp
             if (password.Length < 6)
             { ShowError("Password must be at least 6 characters."); return; }
 
-            if (password != confirm)
-            { ShowError("Passwords do not match."); return; }
+            if (string.IsNullOrWhiteSpace(university) || university == "Ex: ICTU")
+            { ShowError("Please enter your University."); return; }
+
+            if (string.IsNullOrWhiteSpace(studentId) || studentId == "Ex: DTC255190009")
+            { ShowError("Please enter your Student ID."); return; }
 
             string otpCode = new System.Random().Next(100000, 999999).ToString();
 
@@ -91,7 +95,7 @@ namespace soundapp
 
             if (otpDialog.ShowDialog() == true)
             {
-                bool success = DatabaseManager.Register(email, password, name);
+                bool success = DatabaseManager.Register(email, password, name, university, studentId);
                 if (!success)
                 { ShowError("Email này đã được đăng ký."); return; }
 
