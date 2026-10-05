@@ -213,13 +213,20 @@
                     </ListBox.ItemContainerStyle>
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Margin="0,5" PreviewMouseLeftButtonUp="HistoryItem_Click" Background="Transparent">
-                                <TextBlock Text="🎵" Margin="0,0,12,0" Opacity="0.5" VerticalAlignment="Center"/>
-                                <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" MaxWidth="150" Foreground="White" FontWeight="SemiBold"/>
-                                    <TextBlock Text="Recent Track" FontSize="11" Opacity="0.6" Margin="0,2,0,0"/>
+                            <Button Click="HistoryItem_Click" Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" Cursor="Hand">
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <ContentPresenter/>
+                                    </ControlTemplate>
+                                </Button.Template>
+                                <StackPanel Orientation="Horizontal" Margin="0,5">
+                                    <TextBlock Text="🎵" Margin="0,0,12,0" Opacity="0.5" VerticalAlignment="Center"/>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding DisplayTitle}" TextTrimming="CharacterEllipsis" MaxWidth="150" Foreground="White" FontWeight="SemiBold"/>
+                                        <TextBlock Text="Recent Track" FontSize="11" Opacity="0.6" Margin="0,2,0,0"/>
+                                    </StackPanel>
                                 </StackPanel>
-                            </StackPanel>
+                            </Button>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
@@ -598,20 +605,26 @@
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="ListBoxItem">
-                                                <Border Padding="5" Margin="0,0,0,5" CornerRadius="5" Background="#251b4d" x:Name="ItemBorder" PreviewMouseLeftButtonUp="QueueItem_Click">
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <Image Source="{Binding ThumbnailUrl}" Width="40" Height="40" Stretch="UniformToFill" Margin="0,0,10,0"/>
-                                                        <StackPanel VerticalAlignment="Center">
-                                                            <TextBlock Text="{Binding Title}" MaxWidth="180" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="White"/>
-                                                            <TextBlock Text="{Binding ArtistName}" MaxWidth="180" TextTrimming="CharacterEllipsis" FontSize="11" Foreground="#8783a2"/>
-                                                        </StackPanel>
-                                                    </StackPanel>
-                                                </Border>
-                                                <ControlTemplate.Triggers>
-                                                    <Trigger Property="IsMouseOver" Value="True">
-                                                        <Setter TargetName="ItemBorder" Property="Background" Value="#3a2a7a"/>
-                                                    </Trigger>
-                                                </ControlTemplate.Triggers>
+                                                <Button Click="QueueItem_Click" Background="Transparent" BorderThickness="0" HorizontalContentAlignment="Stretch" Padding="0" Cursor="Hand">
+                                                    <Button.Template>
+                                                        <ControlTemplate TargetType="Button">
+                                                            <Border Padding="5" Margin="0,0,0,5" CornerRadius="5" Background="#251b4d" x:Name="ItemBorder">
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <Image Source="{Binding ThumbnailUrl}" Width="40" Height="40" Stretch="UniformToFill" Margin="0,0,10,0"/>
+                                                                    <StackPanel VerticalAlignment="Center">
+                                                                        <TextBlock Text="{Binding Title}" MaxWidth="180" TextTrimming="CharacterEllipsis" FontSize="12" Foreground="White"/>
+                                                                        <TextBlock Text="{Binding ArtistName}" MaxWidth="180" TextTrimming="CharacterEllipsis" FontSize="11" Foreground="#8783a2"/>
+                                                                    </StackPanel>
+                                                                </StackPanel>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="ItemBorder" Property="Background" Value="#3a2a7a"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Button.Template>
+                                                </Button>
                                             </ControlTemplate>
                                         </Setter.Value>
                                     </Setter>

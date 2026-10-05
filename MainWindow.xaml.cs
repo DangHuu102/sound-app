@@ -150,7 +150,7 @@ namespace soundapp
             catch { }
         }
 
-        private void HistoryItem_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void HistoryItem_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             e.Handled = true;
             System.IO.File.AppendAllText("debug_log.txt", $"[{DateTime.Now}] HistoryItem_Click Fired!\n");
@@ -162,7 +162,7 @@ namespace soundapp
             }
         }
 
-        private void QueueItem_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void QueueItem_Click(object sender, System.Windows.RoutedEventArgs e)
         {
             e.Handled = true;
             System.IO.File.AppendAllText("debug_log.txt", $"[{DateTime.Now}] QueueItem_Click Fired!\n");
