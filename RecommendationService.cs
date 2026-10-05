@@ -24,10 +24,28 @@ namespace soundapp
             var results = new List<TrackItem>();
             try
             {
-                // Nếu không có ca sĩ, tìm theo tiêu đề bài hát
-                string searchQuery = string.IsNullOrWhiteSpace(currentArtist) || currentArtist == "Unknown Artist" 
-                    ? $"{currentTitle} audio" 
-                    : $"{currentArtist} official audio playlist";
+                // Nhận diện các thể loại đặc thù (Remix, Lofi, Vinahouse, Nonstop, Mashup)
+                string lowerTitle = currentTitle.ToLower();
+                string specialVibe = "";
+                if (lowerTitle.Contains("remix")) specialVibe = "remix";
+                else if (lowerTitle.Contains("lofi")) specialVibe = "lofi";
+                else if (lowerTitle.Contains("vinahouse")) specialVibe = "vinahouse";
+                else if (lowerTitle.Contains("nonstop")) specialVibe = "nonstop";
+                else if (lowerTitle.Contains("mashup")) specialVibe = "mashup";
+
+                // Xây dựng query thông minh
+                string searchQuery = "";
+                if (string.IsNullOrWhiteSpace(currentArtist) || currentArtist == "Unknown Artist")
+                {
+                    searchQuery = $"{currentTitle} {specialVibe} audio";
+                }
+                else
+                {
+                    // Nếu là nhạc đặc thù thì tìm "Ca sĩ + Thể loại", nếu không thì tìm "Ca sĩ + bài hát tương tự"
+                    searchQuery = string.IsNullOrEmpty(specialVibe) 
+                        ? $"{currentArtist} official audio playlist" 
+                        : $"{currentArtist} {specialVibe} track";
+                }
 
                 // Sử dụng YoutubeExplode Search để lấy các bài liên quan
                 var searchResults = await _youtube.Search.GetVideosAsync(searchQuery).CollectAsync(15);

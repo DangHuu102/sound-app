@@ -85,7 +85,7 @@ namespace soundapp
             // 1. Loại bỏ các noise tags: (Official Music Video), [MV], (Lyric Video), 4K...
             string cleaned = System.Text.RegularExpressions.Regex.Replace(
                 youtubeTitle, 
-                @"\s*[\[\(](official.*?|audio|mv|lyrics?|visualizer|live|4k|hd|remix)[\)\]]", 
+                @"\s*[\[\(](official.*?|audio|mv|lyrics?|visualizer|live|4k|hd)[\)\]]", 
                 "", 
                 System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
