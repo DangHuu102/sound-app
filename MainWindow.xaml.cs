@@ -152,25 +152,35 @@ namespace soundapp
 
         private void HistoryItem_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
+            e.Handled = true;
+            System.IO.File.AppendAllText("debug_log.txt", $"[{DateTime.Now}] HistoryItem_Click Fired!\n");
             if ((sender as System.Windows.FrameworkElement)?.DataContext is PlayHistory history)
             {
+                System.IO.File.AppendAllText("debug_log.txt", $"[{DateTime.Now}] Playing History: {history.Url}\n");
                 YoutubeUrlTextBox.Text = history.Url;
-                _ = PlayTrackAsync(history.Url);
+                Dispatcher.InvokeAsync(() => { _ = PlayTrackAsync(history.Url); });
             }
         }
 
         private void QueueItem_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
+            e.Handled = true;
+            System.IO.File.AppendAllText("debug_log.txt", $"[{DateTime.Now}] QueueItem_Click Fired!\n");
             if ((sender as System.Windows.FrameworkElement)?.DataContext is TrackItem track)
             {
-                _queueItems.Remove(track);
-                YoutubeUrlTextBox.Text = track.YoutubeUrl;
-                _ = PlayTrackAsync(track.YoutubeUrl);
+                System.IO.File.AppendAllText("debug_log.txt", $"[{DateTime.Now}] Playing Queue: {track.YoutubeUrl}\n");
+                Dispatcher.InvokeAsync(() => 
+                {
+                    _queueItems.Remove(track);
+                    YoutubeUrlTextBox.Text = track.YoutubeUrl;
+                    _ = PlayTrackAsync(track.YoutubeUrl);
+                });
             }
         }
 
         private async System.Threading.Tasks.Task PlayTrackAsync(string input)
         {
+            System.IO.File.AppendAllText("debug_log.txt", $"[{DateTime.Now}] PlayTrackAsync called with input: {input}\n");
             if (string.IsNullOrWhiteSpace(input)) return;
 
             // Hủy request tải nhạc trước đó nếu user bấm liên tục (Khởi tạo CancellationToken trước)
@@ -302,9 +312,12 @@ namespace soundapp
                         });
                     });
             }
-            catch (OperationCanceledException) { /* Bỏ qua nếu bị cancel do bấm bài mới */ }
+            catch (OperationCanceledException) { 
+                System.IO.File.AppendAllText("debug_log.txt", $"[{DateTime.Now}] PlayTrackAsync canceled.\n");
+            }
             catch (Exception ex)
             {
+                System.IO.File.AppendAllText("debug_log.txt", $"[{DateTime.Now}] PlayTrackAsync Exception: {ex.Message}\n{ex.StackTrace}\n");
                 Dispatcher.Invoke(() => ShowNotification($"Lỗi tải YouTube: {ex.Message}", "error"));
             }
             finally

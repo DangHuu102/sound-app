@@ -194,7 +194,6 @@
                          ScrollViewer.VerticalScrollBarVisibility="Auto">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="ListBoxItem">
-                            <EventSetter Event="PreviewMouseLeftButtonUp" Handler="HistoryItem_Click"/>
                             <Setter Property="Template">
                                 <Setter.Value>
                                     <ControlTemplate TargetType="ListBoxItem">
@@ -214,7 +213,7 @@
                     </ListBox.ItemContainerStyle>
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Margin="0,5" MouseLeftButtonUp="HistoryItem_Click" Background="Transparent">
+                            <StackPanel Orientation="Horizontal" Margin="0,5" PreviewMouseLeftButtonUp="HistoryItem_Click" Background="Transparent">
                                 <TextBlock Text="🎵" Margin="0,0,12,0" Opacity="0.5" VerticalAlignment="Center"/>
                                 <StackPanel VerticalAlignment="Center">
                                     <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis" MaxWidth="150" Foreground="White" FontWeight="SemiBold"/>
@@ -596,11 +595,10 @@
                                  ScrollViewer.VerticalScrollBarVisibility="Auto">
                             <ListBox.ItemContainerStyle>
                                 <Style TargetType="ListBoxItem">
-                                    <EventSetter Event="PreviewMouseLeftButtonUp" Handler="QueueItem_Click"/>
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="ListBoxItem">
-                                                <Border Padding="5" Margin="0,0,0,5" CornerRadius="5" Background="#251b4d" x:Name="ItemBorder" MouseLeftButtonUp="QueueItem_Click">
+                                                <Border Padding="5" Margin="0,0,0,5" CornerRadius="5" Background="#251b4d" x:Name="ItemBorder" PreviewMouseLeftButtonUp="QueueItem_Click">
                                                     <StackPanel Orientation="Horizontal">
                                                         <Image Source="{Binding ThumbnailUrl}" Width="40" Height="40" Stretch="UniformToFill" Margin="0,0,10,0"/>
                                                         <StackPanel VerticalAlignment="Center">
