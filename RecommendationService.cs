@@ -24,14 +24,19 @@ namespace soundapp
             var results = new List<TrackItem>();
             try
             {
-                // Nhận diện các thể loại đặc thù (Remix, Lofi, Vinahouse, Nonstop, Mashup)
+                // Khai báo thư viện các Vibe/Genre hiện đại
+                string[] knownVibes = new[] 
+                { 
+                    "remix", "lofi", "vinahouse", "nonstop", "mashup", 
+                    "phonk", "trap", "drill", "edm", "house", 
+                    "acoustic", "chill", "synthwave", "cyberpunk", 
+                    "slowed", "reverb", "sped up", "nightcore", "tiktok", "cover" 
+                };
+
+                // Trích xuất tất cả các vibe có xuất hiện trong tiêu đề
                 string lowerTitle = currentTitle.ToLower();
-                string specialVibe = "";
-                if (lowerTitle.Contains("remix")) specialVibe = "remix";
-                else if (lowerTitle.Contains("lofi")) specialVibe = "lofi";
-                else if (lowerTitle.Contains("vinahouse")) specialVibe = "vinahouse";
-                else if (lowerTitle.Contains("nonstop")) specialVibe = "nonstop";
-                else if (lowerTitle.Contains("mashup")) specialVibe = "mashup";
+                var detectedVibes = knownVibes.Where(v => lowerTitle.Contains(v)).ToList();
+                string specialVibe = string.Join(" ", detectedVibes);
 
                 // Xây dựng query thông minh
                 string searchQuery = "";
