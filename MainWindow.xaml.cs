@@ -31,6 +31,43 @@ namespace soundapp
             CurrentFileText.Text = "Ready to play";
             SetupTrayIcon();
             InitAudioDevice();
+            SetupMediaPlayer();
+        }
+
+        private void SetupMediaPlayer()
+        {
+            // Đợi media load xong mới play — tránh bug "play trước khi buffer xong"
+            _mediaPlayer.MediaOpened += (s, e) =>
+            {
+                _mediaPlayer.Volume = VolumeSlider?.Value ?? 1.0;
+                _mediaPlayer.Play();
+                _isPlaying = true;
+                Dispatcher.Invoke(() =>
+                {
+                    PlayPauseBtn.Tag = "playing";
+                    YoutubeStatusText.Text = $"▶ {CurrentFileText.Text}";
+                });
+            };
+
+            _mediaPlayer.MediaFailed += (s, e) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    YoutubeStatusText.Text = $"❌ Lỗi phát: {e.ErrorException?.Message ?? "Unknown error"}";
+                    _isPlaying = false;
+                    PlayPauseBtn.Tag = "paused";
+                });
+            };
+
+            _mediaPlayer.MediaEnded += (s, e) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    _isPlaying = false;
+                    PlayPauseBtn.Tag = "paused";
+                    YoutubeStatusText.Text = "⏹ Đã phát xong";
+                });
+            };
         }
 
         private void InitAudioDevice()
@@ -41,11 +78,29 @@ namespace soundapp
                 _audioDevice = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
 
                 // Đồng bộ slider với volume hiện tại của Windows
+                float currentVol = _audioDevice.AudioEndpointVolume.MasterVolumeLevelScalar;
                 _isUpdatingSlider = true;
-                VolumeSlider.Value = _audioDevice.AudioEndpointVolume.MasterVolumeLevelScalar;
+                VolumeSlider.Value = currentVol;
                 _isUpdatingSlider = false;
+
+                // Cập nhật % label
+                VolumePercentText.Text = (int)(currentVol * 100) + "%";
+
+                // Hiển thị tên thiết bị thật (ví dụ: "Speakers (Realtek Audio)")
+                string fullName = _audioDevice.FriendlyName; // "Speakers (Realtek High Definition Audio)"
+                // Rút ngắn nếu quá dài
+                DeviceNameText.Text = fullName.Length > 22 ? fullName[..22] + "…" : fullName;
+                DeviceTypeText.Text = _audioDevice.DataFlow == DataFlow.Render ? "🔊 Output Device" : "🎤 Input Device";
+
+                // Hiện trạng thái mute nếu đang mute
+                if (_audioDevice.AudioEndpointVolume.Mute)
+                    MuteBtn.Tag = "muted";
             }
-            catch { }
+            catch
+            {
+                DeviceNameText.Text = "Master Output";
+                DeviceTypeText.Text = "Windows Volume";
+            }
         }
 
         private void SetupTrayIcon()
@@ -264,10 +319,7 @@ namespace soundapp
                 LoadHistory();
 
                 _mediaPlayer.Open(new Uri(_soundFilePath));
-                _mediaPlayer.Volume = VolumeSlider?.Value ?? 1.0;
-                _mediaPlayer.Play();
-                _isPlaying = true;
-                PlayPauseBtn.Tag = "playing";
+                // Play() sẽ được gọi tự động trong MediaOpened event
             }
             catch (Exception ex)
             {

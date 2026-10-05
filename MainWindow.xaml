@@ -395,8 +395,8 @@
                             <ColumnDefinition Width="40"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Master Output" FontWeight="SemiBold" FontSize="13"/>
-                            <TextBlock Text="Windows Volume" FontSize="10" Foreground="{StaticResource TextMuted}"/>
+                            <TextBlock x:Name="DeviceNameText" Text="Master Output" FontWeight="SemiBold" FontSize="13"/>
+                            <TextBlock x:Name="DeviceTypeText" Text="Windows Volume" FontSize="10" Foreground="{StaticResource TextMuted}"/>
                         </StackPanel>
                         <Slider x:Name="VolumeSlider" Grid.Column="1" Style="{StaticResource NeonSlider}"
                                 Minimum="0" Maximum="1" Value="1"
