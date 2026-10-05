@@ -162,9 +162,42 @@ namespace soundapp
             }
         }
 
-        private async System.Threading.Tasks.Task PlayTrackAsync(string url)
+        private async System.Threading.Tasks.Task PlayTrackAsync(string input)
         {
-            if (string.IsNullOrWhiteSpace(url)) return;
+            if (string.IsNullOrWhiteSpace(input)) return;
+
+            // Kiểm tra xem input có phải là URL hợp lệ không
+            bool isUrl = Uri.TryCreate(input, UriKind.Absolute, out var uriResult) 
+                         && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+            
+            string targetUrl = input;
+
+            // Nếu không phải URL -> Coi như là câu truy vấn tìm kiếm
+            if (!isUrl)
+            {
+                Dispatcher.Invoke(() => YoutubeStatusText.Text = $"Đang tìm kiếm '{input}'...");
+                
+                // 1. Tìm trong lịch sử Local (Smart Search)
+                string? localMatch = DatabaseManager.SearchLocalTrack(input);
+                if (!string.IsNullOrEmpty(localMatch))
+                {
+                    targetUrl = localMatch;
+                }
+                else
+                {
+                    // 2. Nếu không có trong lịch sử, tìm trên YouTube
+                    var searchResult = await _youtube.Search.GetVideosAsync(input).FirstOrDefaultAsync();
+                    if (searchResult == null)
+                    {
+                        Dispatcher.Invoke(() => ShowNotification("Không tìm thấy kết quả nào!", "warning"));
+                        return;
+                    }
+                    targetUrl = searchResult.Url;
+                }
+
+                // Cập nhật lại TextBox cho đúng URL
+                Dispatcher.Invoke(() => YoutubeUrlTextBox.Text = targetUrl);
+            }
 
             // Hủy request tải nhạc trước đó nếu user bấm liên tục
             _playCts?.Cancel();
@@ -181,57 +214,57 @@ namespace soundapp
 
             try
             {
-                string streamUrl = DatabaseManager.GetValidStreamUrl(url) ?? "";
+                string streamUrl = DatabaseManager.GetValidStreamUrl(targetUrl) ?? "";
                 string title = "";
                 string thumbUrl = "";
 
                 // Get minimal video info if we don't have stream or need metadata
-                var video = await _youtube.Videos.GetAsync(url, token);
+                var video = await _youtube.Videos.GetAsync(targetUrl, token);
                 title = video.Title;
                 thumbUrl = video.Thumbnails.GetWithHighestResolution().Url;
 
-                if (string.IsNullOrEmpty(streamUrl))
-                {
-                    var manifest = await _youtube.Videos.Streams.GetManifestAsync(video.Id, token);
-                    var streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
-
-                    if (streamInfo == null || token.IsCancellationRequested) return;
-                    streamUrl = streamInfo.Url;
-                    
-                    // Lưu vào cache để dùng lại
-                    DatabaseManager.SaveStreamUrl(url, streamUrl);
-                }
-
-                Dispatcher.Invoke(() =>
-                {
-                    _mediaPlayer.Stop();
-                    _mediaPlayer.Close();
-
-                    _soundFilePath = streamUrl;
-                    _currentThumbnailUrl = thumbUrl;
-                    _currentYoutubeUrl = url;
-
-                    try
+                    if (string.IsNullOrEmpty(streamUrl))
                     {
-                        var bmp = new System.Windows.Media.Imaging.BitmapImage();
-                        bmp.BeginInit();
-                        bmp.UriSource = new Uri(_currentThumbnailUrl);
-                        bmp.DecodePixelWidth = 320; 
-                        bmp.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.None;
-                        bmp.EndInit();
-                        NowPlayingImage.Source = bmp;
+                        var manifest = await _youtube.Videos.Streams.GetManifestAsync(video.Id, token);
+                        var streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+
+                        if (streamInfo == null || token.IsCancellationRequested) return;
+                        streamUrl = streamInfo.Url;
+                        
+                        // Lưu vào cache để dùng lại
+                        DatabaseManager.SaveStreamUrl(targetUrl, streamUrl);
                     }
-                    catch { }
 
-                    CurrentFileText.Text = title;
-                    _mediaPlayer.Open(new Uri(_soundFilePath));
-                    
-                    // Thêm history ngầm không block UI
-                    System.Threading.Tasks.Task.Run(async () => 
+                    Dispatcher.Invoke(() =>
                     {
-                        var meta = DatabaseManager.ParseMetadata(title);
-                        DatabaseManager.AddHistory(title, url, _currentThumbnailUrl);
-                        Dispatcher.Invoke(() => LoadHistory());
+                        _mediaPlayer.Stop();
+                        _mediaPlayer.Close();
+
+                        _soundFilePath = streamUrl;
+                        _currentThumbnailUrl = thumbUrl;
+                        _currentYoutubeUrl = targetUrl;
+
+                        try
+                        {
+                            var bmp = new System.Windows.Media.Imaging.BitmapImage();
+                            bmp.BeginInit();
+                            bmp.UriSource = new Uri(_currentThumbnailUrl);
+                            bmp.DecodePixelWidth = 320; 
+                            bmp.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.None;
+                            bmp.EndInit();
+                            NowPlayingImage.Source = bmp;
+                        }
+                        catch { }
+
+                        CurrentFileText.Text = title;
+                        _mediaPlayer.Open(new Uri(_soundFilePath));
+                        
+                        // Thêm history ngầm không block UI
+                        System.Threading.Tasks.Task.Run(async () => 
+                        {
+                            var meta = DatabaseManager.ParseMetadata(title);
+                            DatabaseManager.AddHistory(title, targetUrl, _currentThumbnailUrl);
+                            Dispatcher.Invoke(() => LoadHistory());
                         
                         // Lấy gợi ý bài hát mới và cho vào Queue (Up Next)
                         var recommendations = await RecommendationService.GetRecommendationsAsync(meta.SongTitle, meta.Artist);
@@ -473,7 +506,10 @@ namespace soundapp
             if (_isUpdatingSlider) return;
             
             _audioService?.SetMasterVolumeAsync((float)e.NewValue);
-            VolumePercentText.Text = (int)(e.NewValue * 100) + "%";
+            if (VolumePercentText != null)
+            {
+                VolumePercentText.Text = (int)(e.NewValue * 100) + "%";
+            }
         }
 
         private void MuteBtn_Click(object sender, RoutedEventArgs e)

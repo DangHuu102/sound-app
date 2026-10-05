@@ -230,5 +230,22 @@ namespace soundapp
                 connection.Execute("INSERT INTO Playlists (Name) VALUES (@Name)", new { Name = name });
             }
         }
+
+        public static string? SearchLocalTrack(string query)
+        {
+            using (var connection = new SqliteConnection(GetConnectionString()))
+            {
+                // Ưu tiên tìm trong bảng Tracks (dựa trên Title hoặc ArtistName)
+                // Lấy kết quả có nhiều lượt nghe nhất trong PlayHistory
+                var sql = @"
+                    SELECT t.YoutubeUrl 
+                    FROM Tracks t
+                    WHERE t.Title LIKE @Query OR t.ArtistName LIKE @Query
+                    ORDER BY (SELECT COUNT(*) FROM PlayHistory h WHERE h.Url = t.YoutubeUrl) DESC
+                    LIMIT 1";
+                
+                return connection.QueryFirstOrDefault<string>(sql, new { Query = $"%{query}%" });
+            }
+        }
     }
 }
