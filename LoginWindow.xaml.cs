@@ -12,7 +12,24 @@ namespace soundapp
 
             EmailBox.Text = "Enter your username or email";
             EmailBox.Foreground = System.Windows.Media.Brushes.Gray;
-            MouseLeftButtonDown += (s, e) => { if (e.ButtonState == MouseButtonState.Pressed) DragMove(); };
+            MouseLeftButtonDown += (s, e) => 
+            { 
+                if (e.OriginalSource is System.Windows.DependencyObject depObj)
+                {
+                    var current = depObj;
+                    while (current != null)
+                    {
+                        if (current is System.Windows.Controls.TextBox || current is System.Windows.Controls.PasswordBox || current is System.Windows.Controls.Button)
+                        {
+                            return; // Dừng lại, để cho control xử lý
+                        }
+                        current = System.Windows.Media.VisualTreeHelper.GetParent(current);
+                    }
+                }
+
+                if (e.ButtonState == MouseButtonState.Pressed)
+                    DragMove(); 
+            };
         }
 
         private void ClearPlaceholder(object sender, RoutedEventArgs e)
