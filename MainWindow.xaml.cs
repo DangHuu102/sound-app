@@ -58,9 +58,19 @@ namespace soundapp
                 Dispatcher.Invoke(() =>
                 {
                     ShowNotification($"Lỗi phát nhạc: {e.ErrorException?.Message}", "error");
-                    _isPlaying = false;
-                    PlayPauseBtn.Tag = "paused";
-                    YoutubeStatusText.Text = "";
+                    
+                    if (_queueItems.Count > 0)
+                    {
+                        var nextTrack = _queueItems[0];
+                        _queueItems.RemoveAt(0);
+                        _ = PlayTrackAsync(nextTrack.YoutubeUrl);
+                    }
+                    else
+                    {
+                        _isPlaying = false;
+                        PlayPauseBtn.Tag = "paused";
+                        YoutubeStatusText.Text = "";
+                    }
                 });
             };
 
@@ -142,7 +152,7 @@ namespace soundapp
 
         private void HistoryItem_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (sender is System.Windows.Controls.ListBoxItem item && item.DataContext is PlayHistory history)
+            if ((sender as System.Windows.FrameworkElement)?.DataContext is PlayHistory history)
             {
                 YoutubeUrlTextBox.Text = history.Url;
                 _ = PlayTrackAsync(history.Url);
@@ -151,7 +161,7 @@ namespace soundapp
 
         private void QueueItem_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            if (sender is System.Windows.Controls.ListBoxItem item && item.DataContext is TrackItem track)
+            if ((sender as System.Windows.FrameworkElement)?.DataContext is TrackItem track)
             {
                 _queueItems.Remove(track);
                 YoutubeUrlTextBox.Text = track.YoutubeUrl;
