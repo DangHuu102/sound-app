@@ -166,40 +166,7 @@ namespace soundapp
         {
             if (string.IsNullOrWhiteSpace(input)) return;
 
-            // Kiểm tra xem input có phải là URL hợp lệ không
-            bool isUrl = Uri.TryCreate(input, UriKind.Absolute, out var uriResult) 
-                         && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
-            
-            string targetUrl = input;
-
-            // Nếu không phải URL -> Coi như là câu truy vấn tìm kiếm
-            if (!isUrl)
-            {
-                Dispatcher.Invoke(() => YoutubeStatusText.Text = $"Đang tìm kiếm '{input}'...");
-                
-                // 1. Tìm trong lịch sử Local (Smart Search)
-                string? localMatch = DatabaseManager.SearchLocalTrack(input);
-                if (!string.IsNullOrEmpty(localMatch))
-                {
-                    targetUrl = localMatch;
-                }
-                else
-                {
-                    // 2. Nếu không có trong lịch sử, tìm trên YouTube
-                    var searchResult = await _youtube.Search.GetVideosAsync(input).FirstOrDefaultAsync();
-                    if (searchResult == null)
-                    {
-                        Dispatcher.Invoke(() => ShowNotification("Không tìm thấy kết quả nào!", "warning"));
-                        return;
-                    }
-                    targetUrl = searchResult.Url;
-                }
-
-                // Cập nhật lại TextBox cho đúng URL
-                Dispatcher.Invoke(() => YoutubeUrlTextBox.Text = targetUrl);
-            }
-
-            // Hủy request tải nhạc trước đó nếu user bấm liên tục
+            // Hủy request tải nhạc trước đó nếu user bấm liên tục (Khởi tạo CancellationToken trước)
             _playCts?.Cancel();
             _playCts?.Dispose();
             _playCts = new CancellationTokenSource();
@@ -209,11 +176,45 @@ namespace soundapp
             {
                 HistoryList.IsEnabled = false; // Tạm khóa để tránh spam click làm giật máy
                 YoutubeUrlTextBox.IsEnabled = false;
-                YoutubeStatusText.Text = "Đang tải audio...";
+                YoutubeStatusText.Text = "Đang xử lý...";
             });
 
             try
             {
+                // Kiểm tra xem input có phải là URL hợp lệ không
+                bool isUrl = Uri.TryCreate(input, UriKind.Absolute, out var uriResult) 
+                             && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
+                
+                string targetUrl = input;
+
+                // Nếu không phải URL -> Coi như là câu truy vấn tìm kiếm
+                if (!isUrl)
+                {
+                    Dispatcher.Invoke(() => YoutubeStatusText.Text = $"Đang tìm kiếm '{input}'...");
+                    
+                    // 1. Tìm trong lịch sử Local (Smart Search)
+                    string? localMatch = DatabaseManager.SearchLocalTrack(input);
+                    if (!string.IsNullOrEmpty(localMatch))
+                    {
+                        targetUrl = localMatch;
+                    }
+                    else
+                    {
+                        // 2. Tìm trên YouTube (Cấp token để có thể hủy nếu user spam tìm kiếm)
+                        var searchResult = await _youtube.Search.GetVideosAsync(input).FirstOrDefaultAsync(token);
+                        if (searchResult == null)
+                        {
+                            Dispatcher.Invoke(() => ShowNotification("Không tìm thấy kết quả nào!", "warning"));
+                            return;
+                        }
+                        targetUrl = searchResult.Url;
+                    }
+
+                    // Cập nhật lại TextBox cho đúng URL
+                    Dispatcher.Invoke(() => YoutubeUrlTextBox.Text = targetUrl);
+                }
+
+                Dispatcher.Invoke(() => YoutubeStatusText.Text = "Đang tải audio...");
                 string streamUrl = DatabaseManager.GetValidStreamUrl(targetUrl) ?? "";
                 string title = "";
                 string thumbUrl = "";
@@ -250,8 +251,9 @@ namespace soundapp
                             bmp.BeginInit();
                             bmp.UriSource = new Uri(_currentThumbnailUrl);
                             bmp.DecodePixelWidth = 320; 
-                            bmp.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.None;
+                            bmp.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.OnLoad; // Sửa lỗi rò rỉ bộ nhớ
                             bmp.EndInit();
+                            bmp.Freeze(); // Cho phép dùng cross-thread và giải phóng nhanh
                             NowPlayingImage.Source = bmp;
                         }
                         catch { }
@@ -262,28 +264,36 @@ namespace soundapp
                         // Thêm history ngầm không block UI
                         System.Threading.Tasks.Task.Run(async () => 
                         {
-                            var meta = DatabaseManager.ParseMetadata(title);
-                            DatabaseManager.AddHistory(title, targetUrl, _currentThumbnailUrl);
-                            Dispatcher.Invoke(() => LoadHistory());
-                        
-                        // Lấy gợi ý bài hát mới và cho vào Queue (Up Next)
-                        var recommendations = await RecommendationService.GetRecommendationsAsync(meta.SongTitle, meta.Artist);
-                        Dispatcher.Invoke(() => 
-                        {
-                            // Chỉ điền Queue nếu user không tự thêm thủ công
-                            if (_queueItems.Count < 5)
+                            try
                             {
-                                foreach (var track in recommendations)
+                                var meta = DatabaseManager.ParseMetadata(title);
+                                DatabaseManager.AddHistory(title, targetUrl, _currentThumbnailUrl);
+                                Dispatcher.InvokeAsync(() => LoadHistory()); // InvokeAsync chống deadlock
+                                
+                                // Lấy gợi ý bài hát mới và cho vào Queue (Up Next)
+                                var recommendations = await RecommendationService.GetRecommendationsAsync(meta.SongTitle, meta.Artist);
+                                
+                                // Hủy add nếu user đã next bài khác
+                                if (token.IsCancellationRequested) return;
+
+                                Dispatcher.InvokeAsync(() => 
                                 {
-                                    if (!_queueItems.Any(q => q.YoutubeUrl == track.YoutubeUrl))
+                                    // Bổ sung nút Toggle tính năng tự play sau này (tạm thời cứ check count)
+                                    if (_queueItems.Count < 5)
                                     {
-                                        _queueItems.Add(track);
+                                        foreach (var track in recommendations)
+                                        {
+                                            if (!_queueItems.Any(q => q.YoutubeUrl == track.YoutubeUrl))
+                                            {
+                                                _queueItems.Add(track);
+                                            }
+                                        }
                                     }
-                                }
+                                });
                             }
+                            catch { } // Tránh UnobservedTaskException gây crash toàn app
                         });
                     });
-                });
             }
             catch (OperationCanceledException) { /* Bỏ qua nếu bị cancel do bấm bài mới */ }
             catch (Exception ex)

@@ -47,42 +47,36 @@ namespace soundapp
 
         public void SetMasterVolumeAsync(float volume)
         {
-            ThreadPool.QueueUserWorkItem(_ =>
+            lock (_lock)
             {
-                lock (_lock)
+                try
                 {
-                    try
-                    {
-                        if (_currentDevice != null)
-                            _currentDevice.AudioEndpointVolume.MasterVolumeLevelScalar = volume;
-                    }
-                    catch (COMException)
-                    {
-                        RefreshCurrentDevice();
-                    }
-                    catch { }
+                    if (_currentDevice != null)
+                        _currentDevice.AudioEndpointVolume.MasterVolumeLevelScalar = volume;
                 }
-            });
+                catch (COMException)
+                {
+                    RefreshCurrentDevice();
+                }
+                catch { }
+            }
         }
 
         public void ToggleMuteAsync()
         {
-            ThreadPool.QueueUserWorkItem(_ =>
+            lock (_lock)
             {
-                lock (_lock)
+                try
                 {
-                    try
-                    {
-                        if (_currentDevice != null)
-                            _currentDevice.AudioEndpointVolume.Mute = !_currentDevice.AudioEndpointVolume.Mute;
-                    }
-                    catch (COMException)
-                    {
-                        RefreshCurrentDevice();
-                    }
-                    catch { }
+                    if (_currentDevice != null)
+                        _currentDevice.AudioEndpointVolume.Mute = !_currentDevice.AudioEndpointVolume.Mute;
                 }
-            });
+                catch (COMException)
+                {
+                    RefreshCurrentDevice();
+                }
+                catch { }
+            }
         }
 
         public void Dispose()

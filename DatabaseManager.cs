@@ -34,6 +34,12 @@ namespace soundapp
         public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 
+    public class StreamCacheItem
+    {
+        public string StreamUrl { get; set; } = "";
+        public DateTime ExpiresAt { get; set; }
+    }
+
     public static class DatabaseManager
     {
         private static string GetDbPath()
@@ -43,7 +49,7 @@ namespace soundapp
 
         private static string GetConnectionString()
         {
-            return $"Data Source={GetDbPath()}";
+            return $"Data Source={GetDbPath()};Default Timeout=5;";
         }
 
         public static void InitializeDatabase()
@@ -118,7 +124,7 @@ namespace soundapp
         {
             using (var connection = new SqliteConnection(GetConnectionString()))
             {
-                var cache = connection.QueryFirstOrDefault("SELECT StreamUrl, ExpiresAt FROM StreamCache WHERE YoutubeUrl = @Url", new { Url = youtubeUrl });
+                var cache = connection.QueryFirstOrDefault<StreamCacheItem>("SELECT StreamUrl, ExpiresAt FROM StreamCache WHERE YoutubeUrl = @Url", new { Url = youtubeUrl });
                 if (cache != null && cache.ExpiresAt > DateTime.UtcNow)
                 {
                     return cache.StreamUrl;
@@ -175,22 +181,27 @@ namespace soundapp
         {
             using (var connection = new SqliteConnection(GetConnectionString()))
             {
-                var meta = ParseMetadata(title);
-                // Lưu vào Tracks
-                connection.Execute(@"
-                    INSERT OR IGNORE INTO Tracks (Id, Title, ArtistName, YoutubeUrl, ThumbnailUrl)
-                    VALUES (@Id, @Title, @ArtistName, @YoutubeUrl, @ThumbnailUrl)",
-                    new { Id = Guid.NewGuid().ToString(), Title = meta.SongTitle, ArtistName = meta.Artist, YoutubeUrl = url, ThumbnailUrl = thumbnailUrl });
+                connection.Open();
+                using var tran = connection.BeginTransaction();
+                try
+                {
+                    var meta = ParseMetadata(title);
+                    
+                    connection.Execute(@"
+                        INSERT OR IGNORE INTO Tracks (Id, Title, ArtistName, YoutubeUrl, ThumbnailUrl)
+                        VALUES (@Id, @Title, @ArtistName, @YoutubeUrl, @ThumbnailUrl)",
+                        new { Id = Guid.NewGuid().ToString(), Title = meta.SongTitle, ArtistName = meta.Artist, YoutubeUrl = url, ThumbnailUrl = thumbnailUrl }, tran);
 
-                // Lưu vào History
-                connection.Execute("DELETE FROM PlayHistory WHERE Url = @Url", new { Url = url });
-                
-                var insertCmd = @"
-                    INSERT INTO PlayHistory (Title, Url, ThumbnailUrl, CreatedAt)
-                    VALUES (@Title, @Url, @ThumbnailUrl, @CreatedAt);
-                ";
-                // Chú ý: dùng title gốc hoặc title đã parse cho UI
-                connection.Execute(insertCmd, new { Title = meta.SongTitle + "\n" + meta.Artist, Url = url, ThumbnailUrl = thumbnailUrl, CreatedAt = DateTime.Now });
+                    connection.Execute("DELETE FROM PlayHistory WHERE Url = @Url", new { Url = url }, tran);
+                    
+                    connection.Execute(@"
+                        INSERT INTO PlayHistory (Title, Url, ThumbnailUrl, CreatedAt)
+                        VALUES (@Title, @Url, @ThumbnailUrl, @CreatedAt)",
+                        new { Title = meta.SongTitle + "\n" + meta.Artist, Url = url, ThumbnailUrl = thumbnailUrl, CreatedAt = DateTime.Now }, tran);
+                        
+                    tran.Commit();
+                }
+                catch { tran.Rollback(); }
             }
         }
 
