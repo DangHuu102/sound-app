@@ -140,25 +140,25 @@ namespace soundapp
             catch { }
         }
 
-        private void HistoryList_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void HistoryList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (HistoryList.SelectedItem is PlayHistory history)
             {
                 YoutubeUrlTextBox.Text = history.Url;
                 _ = PlayTrackAsync(history.Url);
-                // Xóa chọn để người dùng có thể click lại bài này nếu muốn
-                HistoryList.SelectedItem = null;
+                // Xóa chọn bất đồng bộ để tránh lỗi vòng lặp sự kiện
+                Dispatcher.InvokeAsync(() => HistoryList.SelectedItem = null);
             }
         }
 
-        private void QueueList_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void QueueList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
             if (QueueList.SelectedItem is TrackItem track)
             {
                 _queueItems.Remove(track);
                 YoutubeUrlTextBox.Text = track.YoutubeUrl;
                 _ = PlayTrackAsync(track.YoutubeUrl);
-                QueueList.SelectedItem = null;
+                Dispatcher.InvokeAsync(() => QueueList.SelectedItem = null);
             }
         }
 
