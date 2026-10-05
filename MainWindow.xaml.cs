@@ -22,6 +22,7 @@ namespace soundapp
         private AudioDeviceService? _audioService;
         private bool _isUpdatingSlider = false;
         private CancellationTokenSource? _playCts;
+        private System.Collections.ObjectModel.ObservableCollection<TrackItem> _queueItems = new();
 
         public MainWindow()
         {
@@ -30,6 +31,7 @@ namespace soundapp
             DatabaseManager.InitializePlaylists();
             LoadHistory();
             LoadPlaylists();
+            QueueList.ItemsSource = _queueItems;
             CurrentFileText.Text = "Ready to play";
             SetupTrayIcon();
             InitAudioDevice();
@@ -40,8 +42,6 @@ namespace soundapp
         {
             _mediaPlayer.MediaOpened += (s, e) =>
             {
-                // Giữ volume MediaPlayer nội bộ luôn ở mức 100% để tránh lỗi Double-Scaling
-                // Volume thực sự sẽ do Windows Master Volume quyết định qua _audioService.
                 _mediaPlayer.Volume = 1.0; 
                 _mediaPlayer.Play();
                 Dispatcher.Invoke(() =>
@@ -68,9 +68,18 @@ namespace soundapp
             {
                 Dispatcher.Invoke(() =>
                 {
-                    _isPlaying = false;
-                    PlayPauseBtn.Tag = "paused";
-                    YoutubeStatusText.Text = "⏹ Đã phát xong";
+                    if (_queueItems.Count > 0)
+                    {
+                        var nextTrack = _queueItems[0];
+                        _queueItems.RemoveAt(0);
+                        _ = PlayTrackAsync(nextTrack.YoutubeUrl);
+                    }
+                    else
+                    {
+                        _isPlaying = false;
+                        PlayPauseBtn.Tag = "paused";
+                        YoutubeStatusText.Text = "⏹ Đã phát xong";
+                    }
                 });
             };
         }
@@ -142,6 +151,17 @@ namespace soundapp
             }
         }
 
+        private void QueueList_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (QueueList.SelectedItem is TrackItem track)
+            {
+                _queueItems.Remove(track);
+                YoutubeUrlTextBox.Text = track.YoutubeUrl;
+                _ = PlayTrackAsync(track.YoutubeUrl);
+                QueueList.SelectedItem = null;
+            }
+        }
+
         private async System.Threading.Tasks.Task PlayTrackAsync(string url)
         {
             if (string.IsNullOrWhiteSpace(url)) return;
@@ -207,10 +227,28 @@ namespace soundapp
                     _mediaPlayer.Open(new Uri(_soundFilePath));
                     
                     // Thêm history ngầm không block UI
-                    System.Threading.Tasks.Task.Run(() => 
+                    System.Threading.Tasks.Task.Run(async () => 
                     {
+                        var meta = DatabaseManager.ParseMetadata(title);
                         DatabaseManager.AddHistory(title, url, _currentThumbnailUrl);
                         Dispatcher.Invoke(() => LoadHistory());
+                        
+                        // Lấy gợi ý bài hát mới và cho vào Queue (Up Next)
+                        var recommendations = await RecommendationService.GetRecommendationsAsync(meta.SongTitle, meta.Artist);
+                        Dispatcher.Invoke(() => 
+                        {
+                            // Chỉ điền Queue nếu user không tự thêm thủ công
+                            if (_queueItems.Count < 5)
+                            {
+                                foreach (var track in recommendations)
+                                {
+                                    if (!_queueItems.Any(q => q.YoutubeUrl == track.YoutubeUrl))
+                                    {
+                                        _queueItems.Add(track);
+                                    }
+                                }
+                            }
+                        });
                     });
                 });
             }

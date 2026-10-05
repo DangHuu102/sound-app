@@ -589,7 +589,8 @@
                         </StackPanel>
                         
                         <ListBox x:Name="QueueList" Grid.Row="1" Background="Transparent" BorderThickness="0" Foreground="White"
-                                 ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                 MouseDoubleClick="QueueList_MouseDoubleClick">
                             <ListBox.ItemContainerStyle>
                                 <Style TargetType="ListBoxItem">
                                     <Setter Property="Template">
