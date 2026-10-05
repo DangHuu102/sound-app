@@ -18,8 +18,9 @@ namespace soundapp
         private Forms.NotifyIcon _notifyIcon = null!;
         private string? _soundFilePath;
         private string? _currentThumbnailUrl;
-        private MMDevice? _audioDevice;
+        private AudioDeviceService? _audioService;
         private bool _isUpdatingSlider = false;
+        private CancellationTokenSource? _playCts;
 
         public MainWindow()
         {
@@ -36,16 +37,18 @@ namespace soundapp
 
         private void SetupMediaPlayer()
         {
-            // Đợi media load xong mới play — tránh bug "play trước khi buffer xong"
             _mediaPlayer.MediaOpened += (s, e) =>
             {
-                _mediaPlayer.Volume = VolumeSlider?.Value ?? 1.0;
+                // Giữ volume MediaPlayer nội bộ luôn ở mức 100% để tránh lỗi Double-Scaling
+                // Volume thực sự sẽ do Windows Master Volume quyết định qua _audioService.
+                _mediaPlayer.Volume = 1.0; 
                 _mediaPlayer.Play();
-                _isPlaying = true;
                 Dispatcher.Invoke(() =>
                 {
+                    _isPlaying = true;
                     PlayPauseBtn.Tag = "playing";
                     YoutubeStatusText.Text = $"▶ {CurrentFileText.Text}";
+                    PlayPauseBtn.Opacity = 1.0;
                 });
             };
 
@@ -53,9 +56,10 @@ namespace soundapp
             {
                 Dispatcher.Invoke(() =>
                 {
-                    YoutubeStatusText.Text = $"❌ Lỗi phát: {e.ErrorException?.Message ?? "Unknown error"}";
+                    ShowNotification($"Lỗi phát nhạc: {e.ErrorException?.Message}", "error");
                     _isPlaying = false;
                     PlayPauseBtn.Tag = "paused";
+                    YoutubeStatusText.Text = "";
                 });
             };
 
@@ -72,35 +76,28 @@ namespace soundapp
 
         private void InitAudioDevice()
         {
-            try
+            _audioService = new AudioDeviceService();
+
+            _audioService.DeviceChanged += (deviceName) =>
             {
-                var enumerator = new MMDeviceEnumerator();
-                _audioDevice = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+                Dispatcher.Invoke(() =>
+                {
+                    DeviceNameText.Text = deviceName;
+                    DeviceTypeText.Text = deviceName.Contains("Not Found") ? "⚠️ Cắm tai nghe/loa" : "🔊 Audio Output";
+                    if (deviceName.Contains("Not Found")) ShowNotification("Không tìm thấy thiết bị âm thanh!", "error");
+                });
+            };
 
-                // Đồng bộ slider với volume hiện tại của Windows
-                float currentVol = _audioDevice.AudioEndpointVolume.MasterVolumeLevelScalar;
-                _isUpdatingSlider = true;
-                VolumeSlider.Value = currentVol;
-                _isUpdatingSlider = false;
-
-                // Cập nhật % label
-                VolumePercentText.Text = (int)(currentVol * 100) + "%";
-
-                // Hiển thị tên thiết bị thật (ví dụ: "Speakers (Realtek Audio)")
-                string fullName = _audioDevice.FriendlyName; // "Speakers (Realtek High Definition Audio)"
-                // Rút ngắn nếu quá dài
-                DeviceNameText.Text = fullName.Length > 22 ? fullName[..22] + "…" : fullName;
-                DeviceTypeText.Text = _audioDevice.DataFlow == DataFlow.Render ? "🔊 Output Device" : "🎤 Input Device";
-
-                // Hiện trạng thái mute nếu đang mute
-                if (_audioDevice.AudioEndpointVolume.Mute)
-                    MuteBtn.Tag = "muted";
-            }
-            catch
+            _audioService.VolumeChanged += (volume) =>
             {
-                DeviceNameText.Text = "Master Output";
-                DeviceTypeText.Text = "Windows Volume";
-            }
+                Dispatcher.Invoke(() =>
+                {
+                    _isUpdatingSlider = true;
+                    VolumeSlider.Value = volume;
+                    VolumePercentText.Text = (int)(volume * 100) + "%";
+                    _isUpdatingSlider = false;
+                });
+            };
         }
 
         private void SetupTrayIcon()
@@ -133,12 +130,86 @@ namespace soundapp
             catch { }
         }
 
-        private void HistoryList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        private void HistoryList_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             if (HistoryList.SelectedItem is PlayHistory history)
             {
                 YoutubeUrlTextBox.Text = history.Url;
-                LoadYoutubeButton_Click(null!, null!);
+                _ = PlayTrackAsync(history.Url);
+                // Xóa chọn để người dùng có thể click lại bài này nếu muốn
+                HistoryList.SelectedItem = null;
+            }
+        }
+
+        private async System.Threading.Tasks.Task PlayTrackAsync(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return;
+
+            // Hủy request tải nhạc trước đó nếu user bấm liên tục
+            _playCts?.Cancel();
+            _playCts?.Dispose();
+            _playCts = new CancellationTokenSource();
+            var token = _playCts.Token;
+
+            Dispatcher.Invoke(() =>
+            {
+                HistoryList.IsEnabled = false; // Tạm khóa để tránh spam click làm giật máy
+                YoutubeUrlTextBox.IsEnabled = false;
+                YoutubeStatusText.Text = "Đang tải audio...";
+            });
+
+            try
+            {
+                var video = await _youtube.Videos.GetAsync(url, token);
+                var manifest = await _youtube.Videos.Streams.GetManifestAsync(video.Id, token);
+                var streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+
+                if (streamInfo == null || token.IsCancellationRequested) return;
+
+                Dispatcher.Invoke(() =>
+                {
+                    _mediaPlayer.Stop();
+                    _mediaPlayer.Close();
+
+                    _soundFilePath = streamInfo.Url;
+                    _currentThumbnailUrl = video.Thumbnails.GetWithHighestResolution().Url;
+
+                    try
+                    {
+                        var bmp = new System.Windows.Media.Imaging.BitmapImage();
+                        bmp.BeginInit();
+                        bmp.UriSource = new Uri(_currentThumbnailUrl);
+                        bmp.DecodePixelWidth = 320; 
+                        bmp.CacheOption = System.Windows.Media.Imaging.BitmapCacheOption.None;
+                        bmp.EndInit();
+                        NowPlayingImage.Source = bmp;
+                    }
+                    catch { }
+
+                    CurrentFileText.Text = video.Title;
+                    _mediaPlayer.Open(new Uri(_soundFilePath));
+                    
+                    // Thêm history ngầm không block UI
+                    System.Threading.Tasks.Task.Run(() => 
+                    {
+                        DatabaseManager.AddHistory(video.Title, url, _currentThumbnailUrl);
+                        Dispatcher.Invoke(() => LoadHistory());
+                    });
+                });
+            }
+            catch (OperationCanceledException) { /* Bỏ qua nếu bị cancel do bấm bài mới */ }
+            catch (Exception ex)
+            {
+                Dispatcher.Invoke(() => ShowNotification($"Lỗi tải YouTube: {ex.Message}", "error"));
+            }
+            finally
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    HistoryList.IsEnabled = true;
+                    YoutubeUrlTextBox.IsEnabled = true;
+                    if (YoutubeStatusText.Text == "Đang tải audio...") YoutubeStatusText.Text = "";
+                });
             }
         }
 
@@ -190,11 +261,46 @@ namespace soundapp
             settings.ShowDialog();
         }
 
+        private void ShowNotification(string msg, string type = "info")
+        {
+            ToastMessage.Text = msg;
+            if (type == "error")
+            {
+                ToastIcon.Text = "❌";
+                ToastNotification.BorderBrush = new System.Windows.Media.SolidColorBrush(
+                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FF4D6D"));
+            }
+            else if (type == "warning")
+            {
+                ToastIcon.Text = "⚠️";
+                ToastNotification.BorderBrush = new System.Windows.Media.SolidColorBrush(
+                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#FFAA00"));
+            }
+            else
+            {
+                ToastIcon.Text = "✅";
+                ToastNotification.BorderBrush = new System.Windows.Media.SolidColorBrush(
+                    (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#9B4DFF"));
+            }
+
+            ToastNotification.Visibility = Visibility.Visible;
+
+            // Tự ẩn sau 3.5 giây
+            _ = System.Threading.Tasks.Task.Delay(3500).ContinueWith(_ =>
+            {
+                Dispatcher.Invoke(() => ToastNotification.Visibility = Visibility.Collapsed);
+            });
+        }
+
         private bool _isPlaying = false;
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(_soundFilePath)) return;
+            if (string.IsNullOrEmpty(_soundFilePath))
+            {
+                ShowNotification("Chưa có bài hát! Hãy chọn bài hoặc dán link YouTube.", "warning");
+                return;
+            }
 
             if (_isPlaying)
             {
@@ -205,6 +311,12 @@ namespace soundapp
             }
             else
             {
+                // Nếu đang ở cuối bài thì phát lại từ đầu
+                if (_mediaPlayer.NaturalDuration.HasTimeSpan && _mediaPlayer.Position >= _mediaPlayer.NaturalDuration.TimeSpan)
+                {
+                    _mediaPlayer.Position = TimeSpan.Zero;
+                }
+
                 _mediaPlayer.Play();
                 _isPlaying = true;
                 PlayPauseBtn.Tag = "playing";
@@ -232,103 +344,39 @@ namespace soundapp
             if (dialog.ShowDialog() == true)
             {
                 _soundFilePath = dialog.FileName;
-                _mediaPlayer.Open(new Uri(_soundFilePath));
                 CurrentFileText.Text = System.IO.Path.GetFileName(_soundFilePath);
+                _mediaPlayer.Open(new Uri(_soundFilePath));
+                // KHÔNG Play ngay, user tự ấn Play. 
+                _isPlaying = false;
+                PlayPauseBtn.Tag = "paused";
+                YoutubeStatusText.Text = "Đã tải file. Bấm Play để phát.";
             }
         }
 
         private void VolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if (_isUpdatingSlider) return;
-
-            // Điều chỉnh âm lượng Windows thực sự (0.0 - 1.0)
-            try
-            {
-                if (_audioDevice != null)
-                    _audioDevice.AudioEndpointVolume.MasterVolumeLevelScalar = (float)e.NewValue;
-            }
-            catch { }
-
-            // Cũng set cho MediaPlayer nội bộ
-            _mediaPlayer.Volume = e.NewValue;
-
-            // Cập nhật nhãn % hiển thị bên cạnh slider
-            var pct = (int)(e.NewValue * 100);
-            if (VolumePercentText != null)
-                VolumePercentText.Text = pct + "%";
+            
+            _audioService?.SetMasterVolumeAsync((float)e.NewValue);
+            VolumePercentText.Text = (int)(e.NewValue * 100) + "%";
         }
 
         private void MuteBtn_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                if (_audioDevice == null) return;
-                bool isMuted = _audioDevice.AudioEndpointVolume.Mute;
-                _audioDevice.AudioEndpointVolume.Mute = !isMuted;
-
-                // Dùng Tag để Trigger trong XAML tự đổi icon & màu
-                MuteBtn.Tag = (!isMuted) ? "muted" : null;
-            }
-            catch { }
+            _audioService?.ToggleMuteAsync();
+            // Giao diện sẽ được cập nhật thông qua DeviceChanged event nếu cần
+            MuteBtn.Tag = MuteBtn.Tag == null ? "muted" : null;
         }
 
-        private async void LoadYoutubeButton_Click(object sender, RoutedEventArgs e)
+        private void LoadYoutubeButton_Click(object sender, RoutedEventArgs e)
         {
             string url = YoutubeUrlTextBox.Text?.Trim() ?? "";
-            if (string.IsNullOrWhiteSpace(url)) return;
-
-            YoutubeUrlTextBox.IsEnabled = false;
-            YoutubeStatusText.Text = "Loading...";
-
-            try
+            if (string.IsNullOrWhiteSpace(url))
             {
-                var video = await _youtube.Videos.GetAsync(url);
-                var manifest = await _youtube.Videos.Streams.GetManifestAsync(video.Id);
-                var streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
-
-                if (streamInfo == null)
-                {
-                    YoutubeStatusText.Text = "No audio stream found.";
-                    return;
-                }
-
-                // Dispose stream cũ trước khi mở cái mới
-                _mediaPlayer.Stop();
-                _mediaPlayer.Close();
-
-                _soundFilePath = streamInfo.Url;
-                _currentThumbnailUrl = video.Thumbnails.GetWithHighestResolution().Url;
-
-                // Load thumbnail nhẹ hơn: giới hạn kích thước decode
-                try
-                {
-                    var bmp = new BitmapImage();
-                    bmp.BeginInit();
-                    bmp.UriSource = new Uri(_currentThumbnailUrl);
-                    bmp.DecodePixelWidth = 320; // giới hạn decode để tiết kiệm RAM
-                    bmp.CacheOption = BitmapCacheOption.None;
-                    bmp.EndInit();
-                    NowPlayingImage.Source = bmp;
-                }
-                catch { }
-
-                CurrentFileText.Text = video.Title;
-                YoutubeStatusText.Text = $"▶ {video.Title}";
-
-                DatabaseManager.AddHistory(video.Title, url, _currentThumbnailUrl);
-                LoadHistory();
-
-                _mediaPlayer.Open(new Uri(_soundFilePath));
-                // Play() sẽ được gọi tự động trong MediaOpened event
+                ShowNotification("Vui lòng dán đường link YouTube vào ô trống!", "warning");
+                return;
             }
-            catch (Exception ex)
-            {
-                YoutubeStatusText.Text = "Error: " + ex.Message;
-            }
-            finally
-            {
-                YoutubeUrlTextBox.IsEnabled = true;
-            }
+            _ = PlayTrackAsync(url);
         }
 
         private void Window_StateChanged(object sender, EventArgs e)

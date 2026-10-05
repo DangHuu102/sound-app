@@ -189,7 +189,7 @@
                         </Button.Style>
                     </Button>
                 </Grid>
-                <ListBox x:Name="HistoryList" Background="Transparent" BorderThickness="0" Foreground="{StaticResource TextMuted}" SelectionChanged="HistoryList_SelectionChanged"
+                <ListBox x:Name="HistoryList" Background="Transparent" BorderThickness="0" Foreground="{StaticResource TextMuted}" MouseDoubleClick="HistoryList_MouseDoubleClick"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                          ScrollViewer.VerticalScrollBarVisibility="Auto">
                     <ListBox.ItemContainerStyle>
@@ -550,5 +550,18 @@
                 </StackPanel>
             </Border>
         </Grid>
+
+        <!-- Toast Notification Overlay -->
+        <Border x:Name="ToastNotification" Grid.ColumnSpan="3" VerticalAlignment="Top" HorizontalAlignment="Center"
+                Margin="0,20,0,0" Background="#231326" BorderBrush="#FF4D6D" BorderThickness="1.5"
+                CornerRadius="10" Padding="16,8" Visibility="Collapsed" Panel.ZIndex="100">
+            <Border.Effect>
+                <DropShadowEffect Color="Black" BlurRadius="15" ShadowDepth="5" Opacity="0.5"/>
+            </Border.Effect>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock x:Name="ToastIcon" Text="⚠️" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                <TextBlock x:Name="ToastMessage" Text="" Foreground="White" FontSize="13" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
     </Grid>
 </Window>

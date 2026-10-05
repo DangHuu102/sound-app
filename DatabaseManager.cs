@@ -49,6 +49,7 @@ namespace soundapp
             using (var connection = new SqliteConnection(GetConnectionString()))
             {
                 connection.Open();
+                connection.Execute("PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;");
                 connection.Execute(@"
                     CREATE TABLE IF NOT EXISTS PlayHistory (
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
