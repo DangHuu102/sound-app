@@ -124,34 +124,34 @@ namespace soundapp
 
             string otpCode = new System.Random().Next(100000, 999999).ToString();
 
-            // Thử gửi email thật
-            if (EmailService.IsConfigured)
+            // Bắt buộc cấu hình email, không cho phép dùng mã test nữa
+            if (!EmailService.IsConfigured)
             {
-                // Hiện trạng thái đang gửi
-                ErrorText.Foreground = System.Windows.Media.Brushes.CornflowerBlue;
-                ErrorText.Text = $"Đang gửi mã xác thực đến {email}...";
-                ErrorText.Visibility = System.Windows.Visibility.Visible;
-                SignUpBtn.IsEnabled = false;
-
-                bool sent = await EmailService.SendOtpEmailAsync(email, otpCode);
-                SignUpBtn.IsEnabled = true;
-                ErrorText.Foreground = System.Windows.Media.Brushes.OrangeRed;
-                ErrorText.Visibility = System.Windows.Visibility.Collapsed;
-
-                if (!sent)
-                {
-                    ShowError("Không gửi được email. Kiểm tra lại cấu hình SMTP hoặc kết nối mạng.");
-                    return;
-                }
-
                 System.Windows.MessageBox.Show(
-                    $"📧 Mã xác thực đã được gửi đến:\n{email}\n\nVui lòng kiểm tra hộp thư (kể cả Spam).",
-                    "Email đã gửi", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Information);
+                    "Hệ thống chưa được cấu hình Email gửi mã OTP!\n\nVui lòng quay lại giao diện chính, bấm vào biểu tượng Cài đặt Email (Góc trái) để thiết lập Gmail gửi mã.",
+                    "Lỗi cấu hình", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                return;
             }
 
-            // Mở cửa sổ nhập OTP
-            var otpDialog = new VerifyOtpWindow(email, otpCode,
-                showCode: !EmailService.IsConfigured) { Owner = this };
+            // Đã cấu hình -> Gửi email thật
+            ErrorText.Foreground = System.Windows.Media.Brushes.CornflowerBlue;
+            ErrorText.Text = $"Đang gửi mã xác thực đến {email}...";
+            ErrorText.Visibility = System.Windows.Visibility.Visible;
+            SignUpBtn.IsEnabled = false;
+
+            bool sent = await EmailService.SendOtpEmailAsync(email, otpCode);
+            SignUpBtn.IsEnabled = true;
+            ErrorText.Foreground = System.Windows.Media.Brushes.OrangeRed;
+            ErrorText.Visibility = System.Windows.Visibility.Collapsed;
+
+            if (!sent)
+            {
+                ShowError("Không gửi được email. Kiểm tra lại cấu hình SMTP hoặc kết nối mạng.");
+                return;
+            }
+
+            // Mở cửa sổ nhập OTP (Luôn luôn ẩn mã)
+            var otpDialog = new VerifyOtpWindow(email, otpCode, showCode: false) { Owner = this };
 
             if (otpDialog.ShowDialog() == true)
             {
