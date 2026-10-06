@@ -330,30 +330,46 @@
 
             <!-- Top Right Auth Buttons -->
             <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,10">
-                <Button Click="SignUp_Click" Margin="0,0,10,0">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border Background="Transparent" BorderBrush="#4a3a6a" BorderThickness="1" CornerRadius="20" Padding="20,8">
-                                <TextBlock Text="Sign up" Foreground="White" FontSize="13"/>
-                            </Border>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
-                <Button Click="Login_Click">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border CornerRadius="20" Padding="20,8">
-                                <Border.Background>
-                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                        <GradientStop Color="#7B2FBE" Offset="0"/>
-                                        <GradientStop Color="#9B4DFF" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </Border.Background>
-                                <TextBlock Text="Log in" Foreground="White" FontSize="13"/>
-                            </Border>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
+                <!-- Logged in UI -->
+                <StackPanel x:Name="UserProfilePanel" Orientation="Horizontal" Visibility="Collapsed" VerticalAlignment="Center">
+                    <Border Background="#2Affffff" CornerRadius="20" Padding="15,8">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="👤" Foreground="#9B4DFF" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="UserNameText" Text="User" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    <Button Click="Logout_Click" Margin="10,0,0,0" ToolTip="Log out" Cursor="Hand" Background="Transparent" BorderThickness="0">
+                        <TextBlock Text="Đăng xuất" Foreground="#ff5555" FontSize="12"/>
+                    </Button>
+                </StackPanel>
+
+                <!-- Auth Buttons -->
+                <StackPanel x:Name="AuthPanel" Orientation="Horizontal">
+                    <Button Click="SignUp_Click" Margin="0,0,10,0" Cursor="Hand">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border Background="Transparent" BorderBrush="#4a3a6a" BorderThickness="1" CornerRadius="20" Padding="20,8">
+                                    <TextBlock Text="Sign up" Foreground="White" FontSize="13"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                    <Button Click="Login_Click" Cursor="Hand">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border CornerRadius="20" Padding="20,8">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop Color="#7B2FBE" Offset="0"/>
+                                            <GradientStop Color="#9B4DFF" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                    <TextBlock Text="Log in" Foreground="White" FontSize="13"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+                </StackPanel>
             </StackPanel>
 
             <!-- Center Logo -->

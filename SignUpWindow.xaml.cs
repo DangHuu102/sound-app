@@ -159,6 +159,12 @@ namespace soundapp
                 if (!success)
                 { ShowError("Email này đã được đăng ký."); return; }
 
+                // Tự động đăng nhập sau khi đăng ký thành công
+                var user = DatabaseManager.Login(email, password);
+                if (user != null)
+                {
+                    App.CurrentUser = user;
+                }
                 GoToMain();
             }
         }
@@ -167,7 +173,7 @@ namespace soundapp
         {
             var login = new LoginWindow();
             login.Show();
-            this.Hide();
+            this.Close();
         }
 
         private void Back_Click(object sender, RoutedEventArgs e)
@@ -186,14 +192,15 @@ namespace soundapp
             {
                 if (w is MainWindow mw)
                 {
+                    mw.UpdateUserUI();
                     mw.Show();
-                    this.Hide();
+                    this.Close();
                     return;
                 }
             }
             var main = new MainWindow();
             main.Show();
-            this.Hide();
+            this.Close();
         }
 
         private void ShowError(string msg)

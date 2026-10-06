@@ -108,6 +108,7 @@ namespace soundapp
             if (user == null)
             { ShowError("Incorrect username/email or password."); return; }
 
+            App.CurrentUser = user;
             GoToMain();
         }
 
@@ -115,7 +116,7 @@ namespace soundapp
         {
             var signUp = new SignUpWindow();
             signUp.Show();
-            this.Hide();
+            this.Close();
         }
 
         private void Back_Click(object sender, RoutedEventArgs e)
@@ -130,20 +131,19 @@ namespace soundapp
 
         private void GoToMain()
         {
-            // Tìm MainWindow đang ẩn và show lại, tránh tạo instance mới
             foreach (Window w in System.Windows.Application.Current.Windows)
             {
                 if (w is MainWindow mw)
                 {
+                    mw.UpdateUserUI();
                     mw.Show();
-                    this.Hide();
+                    this.Close();
                     return;
                 }
             }
-            // Nếu không tìm thấy thì tạo mới
             var main = new MainWindow();
             main.Show();
-            this.Hide();
+            this.Close();
         }
 
         private void ShowError(string message)

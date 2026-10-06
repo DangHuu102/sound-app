@@ -36,6 +36,28 @@ namespace soundapp
             SetupTrayIcon();
             InitAudioDevice();
             SetupMediaPlayer();
+            UpdateUserUI();
+        }
+
+        public void UpdateUserUI()
+        {
+            if (App.CurrentUser != null)
+            {
+                AuthPanel.Visibility = Visibility.Collapsed;
+                UserProfilePanel.Visibility = Visibility.Visible;
+                UserNameText.Text = App.CurrentUser.DisplayName;
+            }
+            else
+            {
+                AuthPanel.Visibility = Visibility.Visible;
+                UserProfilePanel.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void Logout_Click(object sender, RoutedEventArgs e)
+        {
+            App.CurrentUser = null;
+            UpdateUserUI();
         }
 
         private void SetupMediaPlayer()
