@@ -60,11 +60,14 @@ namespace soundapp
             UpdateUserUI();
         }
 
+        private bool _isManualStop = false;
+
         private void PlayAudioStream(string url)
         {
             try
             {
                 StopAudio();
+                _isManualStop = false;
                 _mfReader = new NAudio.Wave.MediaFoundationReader(url);
                 _waveOut = new NAudio.Wave.WaveOutEvent();
                 _waveOut.Init(_mfReader);
@@ -72,6 +75,8 @@ namespace soundapp
                 
                 _waveOut.PlaybackStopped += (s, e) =>
                 {
+                    if (_isManualStop) return; // Không tự động next nếu người dùng tự ấn Stop hoặc ấn bài khác
+
                     // Lỗi NAudio thường trả về e.Exception khác null, hoặc chỉ đơn giản là hết bài
                     if (e.Exception != null)
                     {
@@ -81,6 +86,29 @@ namespace soundapp
                             _isPlaying = false;
                             PlayPauseBtn.Tag = "paused";
                             YoutubeStatusText.Text = "Lỗi phát âm thanh";
+                        });
+                        return;
+                    }
+
+                    // Kiểm tra xem bài hát đã thực sự hết chưa (đề phòng YouTube ngắt luồng sớm)
+                    bool isPremature = false;
+                    try 
+                    {
+                        if (_mfReader != null && _mfReader.TotalTime.TotalSeconds > 0 && 
+                            _mfReader.CurrentTime.TotalSeconds < _mfReader.TotalTime.TotalSeconds - 5)
+                        {
+                            isPremature = true;
+                        }
+                    } 
+                    catch { }
+
+                    if (isPremature)
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            ShowNotification("Luồng nhạc bị ngắt giữa chừng do mạng không ổn định!", "warning");
+                            _isPlaying = false;
+                            PlayPauseBtn.Tag = "paused";
                         });
                         return;
                     }
@@ -120,6 +148,7 @@ namespace soundapp
 
         private void StopAudio()
         {
+            _isManualStop = true;
             if (_waveOut != null)
             {
                 _waveOut.Stop();
