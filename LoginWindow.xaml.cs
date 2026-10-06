@@ -56,6 +56,43 @@ namespace soundapp
             }
         }
 
+        private bool _isSyncing = false;
+
+        private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            if (!_isSyncing)
+            {
+                _isSyncing = true;
+                VisiblePasswordBox.Text = PasswordBox.Password;
+                _isSyncing = false;
+            }
+        }
+
+        private void VisiblePasswordBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            if (!_isSyncing)
+            {
+                _isSyncing = true;
+                PasswordBox.Password = VisiblePasswordBox.Text;
+                _isSyncing = false;
+            }
+        }
+
+        private void ShowPassword_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            PasswordBox.Visibility = Visibility.Collapsed;
+            VisiblePasswordBox.Visibility = Visibility.Visible;
+            VisiblePasswordBox.Focus();
+            VisiblePasswordBox.Select(VisiblePasswordBox.Text.Length, 0);
+        }
+
+        private void ShowPassword_MouseUp(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            VisiblePasswordBox.Visibility = Visibility.Collapsed;
+            PasswordBox.Visibility = Visibility.Visible;
+            PasswordBox.Focus();
+        }
+
         private void LoginBtn_Click(object sender, RoutedEventArgs e)
         {
             string input = EmailBox.Text.Trim();

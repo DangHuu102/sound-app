@@ -114,8 +114,14 @@
                 <!-- Password -->
                 <TextBlock Text="Password" Foreground="White" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,4"/>
                 <Grid Margin="0,0,0,12">
-                    <PasswordBox x:Name="PasswordBox" Style="{StaticResource GlassPwd}"/>
+                    <PasswordBox x:Name="PasswordBox" Style="{StaticResource GlassPwd}" PasswordChanged="PasswordBox_PasswordChanged"/>
+                    <TextBox x:Name="VisiblePasswordBox" Style="{StaticResource GlassInput}" Visibility="Collapsed" TextChanged="VisiblePasswordBox_TextChanged"/>
                     <TextBlock Text="🔒" Foreground="#8783a2" FontSize="14" Margin="15,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" IsHitTestVisible="False"/>
+                    <Button Content="👁" Background="Transparent" BorderThickness="0" Foreground="#8783a2" 
+                            HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" Cursor="Hand"
+                            PreviewMouseLeftButtonDown="ShowPassword_MouseDown"
+                            PreviewMouseLeftButtonUp="ShowPassword_MouseUp"
+                            MouseLeave="ShowPassword_MouseUp"/>
                 </Grid>
 
                 <!-- University -->
