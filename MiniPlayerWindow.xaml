@@ -23,7 +23,7 @@
             </Grid.RowDefinitions>
 
             <!-- Thumbnail -->
-            <Border CornerRadius="10" Background="#25213b" Margin="0,0,0,10" ClipToBounds="True">
+            <Border CornerRadius="10" Background="#25213b" Margin="0,0,0,10" ClipToBounds="True" Height="220" VerticalAlignment="Bottom">
                 <Image x:Name="ThumbnailImage" Stretch="UniformToFill" Margin="0,37,0,-37"/>
             </Border>
 
@@ -43,16 +43,25 @@
             <StackPanel Orientation="Horizontal" Margin="0,-16,0,202">
                 <TextBlock Text="✦" Foreground="#59C173" Margin="0,0,5,0" VerticalAlignment="Center"/>
                 <TextBlock x:Name="ArtistText" Text="Sound Studio" Foreground="#8783a2" FontSize="12" VerticalAlignment="Center"/>
-
-                <!-- Nút điều khiển góc phải -->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,0">
+                <StackPanel Orientation="Horizontal">
                     <Button Content="—" Width="26" Height="22" Background="Transparent" Foreground="#8783a2"
                             BorderThickness="0" Cursor="Hand" Click="MinimizeButton_Click" FontSize="12"/>
-                    <Button Content="⤢" Width="26" Height="22" Background="Transparent" Foreground="#8783a2"
+                    <Button Content="⤢" Width="40" Height="22" Background="Transparent" Foreground="#8783a2"
                             BorderThickness="0" Cursor="Hand" Click="RestoreButton_Click" FontSize="12"/>
-                    <Button Content="✕" Width="26" Height="22" Background="Transparent" Foreground="#ff5555"
-                            BorderThickness="0" Cursor="Hand" Click="CloseButton_Click" FontSize="12"/>
+                    <Button Content="✕" Width="32" Height="24" Background="Transparent" Foreground="#ff5555"
+                            BorderThickness="0" Cursor="Hand" Click="CloseButton_Click" FontSize="12" RenderTransformOrigin="0.521,0.618">
+                        <Button.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform/>
+                                <SkewTransform/>
+                                <RotateTransform Angle="-0.686"/>
+                                <TranslateTransform/>
+                            </TransformGroup>
+                        </Button.RenderTransform>
+                    </Button>
                 </StackPanel>
+
+                <!-- Nút điều khiển góc phải -->
             </StackPanel>
         </Grid>
     </Border>

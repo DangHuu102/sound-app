@@ -451,6 +451,65 @@ namespace soundapp
             this.Hide();
         }
 
+        private async void DiscoverButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string seedUrl = _currentYoutubeUrl;
+                if (string.IsNullOrEmpty(seedUrl) && _historyItems.Count > 0)
+                {
+                    seedUrl = _historyItems[0].Url;
+                }
+
+                if (string.IsNullOrEmpty(seedUrl))
+                {
+                    ShowNotification("Hãy phát 1 bài hát để hệ thống lấy cơ sở gợi ý nhé!", "warning");
+                    return;
+                }
+
+                ShowNotification("Đang phân tích sở thích để lấy gợi ý...", "info");
+                
+                // Parse Video ID from URL
+                string youtubeId = "";
+                if (seedUrl.Contains("v="))
+                {
+                    var uri = new Uri(seedUrl);
+                    var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+                    youtubeId = query["v"];
+                }
+                else if (seedUrl.Contains("youtu.be/"))
+                {
+                    youtubeId = seedUrl.Split("youtu.be/")[1].Split('?')[0];
+                }
+
+                if (string.IsNullOrEmpty(youtubeId))
+                {
+                    ShowNotification("Không thể gợi ý từ file nhạc local.", "warning");
+                    return;
+                }
+
+                var recommendations = await RecommendationService.GetRelatedTracksAsync(youtubeId);
+                
+                if (recommendations != null && recommendations.Count > 0)
+                {
+                    _queueItems.Clear();
+                    foreach (var track in recommendations)
+                    {
+                        _queueItems.Add(track);
+                    }
+                    ShowNotification($"Đã tạo Playlist Khám phá với {recommendations.Count} bài!", "info");
+                }
+                else
+                {
+                    ShowNotification("Không tìm thấy bài hát gợi ý nào.", "warning");
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowNotification("Có lỗi mạng khi lấy gợi ý", "error");
+            }
+        }
+
         private void LoadPlaylists()
         {
             try { PlaylistList.ItemsSource = DatabaseManager.GetPlaylists(); } catch { }
