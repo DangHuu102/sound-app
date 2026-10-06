@@ -81,23 +81,20 @@ namespace soundapp
                 {
                     ShowNotification($"Lỗi phát nhạc: {e.ErrorException?.Message}", "error");
                     
-                    if (_queueItems.Count > 0)
-                    {
-                        var nextTrack = _queueItems[0];
-                        _queueItems.RemoveAt(0);
-                        _ = PlayTrackAsync(nextTrack.YoutubeUrl);
-                    }
-                    else
-                    {
-                        _isPlaying = false;
-                        PlayPauseBtn.Tag = "paused";
-                        YoutubeStatusText.Text = "";
-                    }
+                    _isPlaying = false;
+                    PlayPauseBtn.Tag = "paused";
+                    YoutubeStatusText.Text = "Lỗi phát âm thanh";
                 });
             };
 
             _mediaPlayer.MediaEnded += (s, e) =>
             {
+                // Đảm bảo bài hát thực sự đã phát được một lúc (tránh lỗi WMP bỏ qua bài liền lập tức)
+                if (!_mediaPlayer.NaturalDuration.HasTimeSpan || _mediaPlayer.Position.TotalSeconds < 1)
+                {
+                    return; 
+                }
+
                 Dispatcher.Invoke(() =>
                 {
                     if (_queueItems.Count > 0)
@@ -110,7 +107,7 @@ namespace soundapp
                     {
                         _isPlaying = false;
                         PlayPauseBtn.Tag = "paused";
-                        YoutubeStatusText.Text = "⏹ Đã phát xong";
+                        YoutubeStatusText.Text = "🎵 Đã phát xong";
                     }
                 });
             };
