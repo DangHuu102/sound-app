@@ -584,10 +584,31 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                            <TextBlock Text="Đợi phát (Queue)" Foreground="White" FontWeight="Bold" Margin="0,0,15,0" Cursor="Hand"/>
-                            <TextBlock Text="Gợi ý tương tự" Foreground="#8783a2" Cursor="Hand"/>
-                        </StackPanel>
+                        <Grid Margin="0,0,0,10">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Đợi phát (Queue)" Foreground="White" FontWeight="Bold" Margin="0,0,15,0"/>
+                                <TextBlock Text="Gợi ý tương tự" Foreground="#8783a2"/>
+                            </StackPanel>
+                            <Button Content="Clear" Foreground="#8783a2" Background="Transparent" BorderThickness="0" 
+                                    HorizontalAlignment="Right" VerticalAlignment="Center" Cursor="Hand" Click="ClearQueueBtn_Click">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <TextBlock Text="{TemplateBinding Content}" Foreground="{TemplateBinding Foreground}" FontSize="12"/>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter Property="Foreground" Value="White"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                        </Grid>
                         
                         <ItemsControl x:Name="QueueList" Grid.Row="1" Background="Transparent" BorderThickness="0" Foreground="White">
                             <ItemsControl.Template>

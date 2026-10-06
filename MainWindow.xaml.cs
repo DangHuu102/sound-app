@@ -335,6 +335,12 @@ namespace soundapp
         {
             DatabaseManager.ClearHistory();
             LoadHistory();
+            _queueItems.Clear(); // Tự động xóa luôn danh sách chờ
+        }
+
+        private void ClearQueueBtn_Click(object sender, RoutedEventArgs e)
+        {
+            _queueItems.Clear();
         }
 
         private void SignUp_Click(object sender, RoutedEventArgs e)
