@@ -71,7 +71,7 @@ namespace soundapp
                 _mfReader = new NAudio.Wave.MediaFoundationReader(url);
                 _waveOut = new NAudio.Wave.WaveOutEvent();
                 _waveOut.Init(_mfReader);
-                _waveOut.Volume = 1.0f;
+                _waveOut.Volume = _appVolume;
                 
                 _waveOut.PlaybackStopped += (s, e) =>
                 {
@@ -759,6 +759,21 @@ namespace soundapp
             if (VolumePercentText != null)
             {
                 VolumePercentText.Text = (int)(e.NewValue * 100) + "%";
+            }
+        }
+
+        private float _appVolume = 1.0f;
+        private void AppVolumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (_isUpdatingSlider) return;
+            _appVolume = (float)e.NewValue;
+            if (_waveOut != null)
+            {
+                _waveOut.Volume = _appVolume;
+            }
+            if (AppVolumePercentText != null)
+            {
+                AppVolumePercentText.Text = (int)(e.NewValue * 100) + "%";
             }
         }
 

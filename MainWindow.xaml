@@ -390,6 +390,26 @@
                         <TextBlock Text="🔊 Điều chỉnh âm lượng Windows" FontSize="10" Foreground="#9B4DFF" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                     </Grid>
 
+                    <!-- App Volume -->
+                    <Grid Margin="0,5,0,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="130"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="45"/>
+                            <ColumnDefinition Width="40"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="App Volume" FontWeight="SemiBold" FontSize="13" Foreground="#E100FF"/>
+                            <TextBlock Text="Âm lượng nhạc" FontSize="10" Foreground="{StaticResource TextMuted}"/>
+                        </StackPanel>
+                        <Slider x:Name="AppVolumeSlider" Grid.Column="1" Style="{StaticResource NeonSlider}"
+                                Minimum="0" Maximum="1" Value="1"
+                                ValueChanged="AppVolumeSlider_ValueChanged" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="AppVolumePercentText" Grid.Column="2" Text="100%"
+                                   Foreground="{StaticResource TextMuted}" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <TextBlock Grid.Column="3" Text="🎵" Foreground="#8783a2" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
+
                     <!-- Master Volume -->
                     <Grid Margin="0,5,0,15">
                         <Grid.ColumnDefinitions>
