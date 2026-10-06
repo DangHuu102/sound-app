@@ -466,6 +466,44 @@ namespace soundapp
             }
         }
 
+        private void AddToPlaylistBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(_currentYoutubeUrl))
+            {
+                ShowNotification("Chưa có bài hát nào đang phát!", "warning");
+                return;
+            }
+
+            var playlists = DatabaseManager.GetPlaylists();
+            if (playlists == null || playlists.Count == 0)
+            {
+                ShowNotification("Bạn chưa tạo Playlist nào!", "warning");
+                return;
+            }
+
+            var contextMenu = new System.Windows.Controls.ContextMenu();
+            contextMenu.Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#161324"));
+            contextMenu.Foreground = System.Windows.Media.Brushes.White;
+            
+            foreach (var pl in playlists)
+            {
+                var menuItem = new System.Windows.Controls.MenuItem { Header = pl.Name };
+                menuItem.Click += (s, args) =>
+                {
+                    DatabaseManager.AddTrackToPlaylist(pl.Id, CurrentFileText.Text, _currentYoutubeUrl, _currentThumbnailUrl ?? "");
+                    ShowNotification($"Đã thêm vào {pl.Name}", "info");
+                };
+                contextMenu.Items.Add(menuItem);
+            }
+
+            if (sender is System.Windows.FrameworkElement button)
+            {
+                contextMenu.PlacementTarget = button;
+                contextMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Top;
+                contextMenu.IsOpen = true;
+            }
+        }
+
         private void MiniPlayerBtn_Click(object sender, RoutedEventArgs e)
         {
             var miniPlayer = new MiniPlayerWindow(this, CurrentFileText.Text, _currentThumbnailUrl ?? "");

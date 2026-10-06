@@ -244,6 +244,15 @@ namespace soundapp
                         Id INTEGER PRIMARY KEY AUTOINCREMENT,
                         Name TEXT NOT NULL,
                         CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+                    );
+                    CREATE TABLE IF NOT EXISTS PlaylistItems (
+                        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        PlaylistId INTEGER,
+                        Title TEXT,
+                        Url TEXT,
+                        ThumbnailUrl TEXT,
+                        CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY(PlaylistId) REFERENCES Playlists(Id)
                     );");
             }
         }
@@ -261,6 +270,24 @@ namespace soundapp
             using (var connection = new SqliteConnection(GetConnectionString()))
             {
                 connection.Execute("INSERT INTO Playlists (Name) VALUES (@Name)", new { Name = name });
+            }
+        }
+
+        public static void AddTrackToPlaylist(int playlistId, string title, string url, string thumbUrl)
+        {
+            using (var connection = new SqliteConnection(GetConnectionString()))
+            {
+                // Tránh thêm trùng bài hát vào cùng 1 playlist
+                var exists = connection.QueryFirstOrDefault<int>(
+                    "SELECT COUNT(1) FROM PlaylistItems WHERE PlaylistId = @PlaylistId AND Url = @Url",
+                    new { PlaylistId = playlistId, Url = url });
+
+                if (exists == 0)
+                {
+                    connection.Execute(
+                        "INSERT INTO PlaylistItems (PlaylistId, Title, Url, ThumbnailUrl) VALUES (@PlaylistId, @Title, @Url, @ThumbnailUrl)",
+                        new { PlaylistId = playlistId, Title = title, Url = url, ThumbnailUrl = thumbUrl });
+                }
             }
         }
 
