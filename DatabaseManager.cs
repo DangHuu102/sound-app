@@ -102,6 +102,9 @@ namespace soundapp
                         "INSERT INTO Users (Email, PasswordHash, DisplayName, University, StudentId) VALUES (@Email, @Hash, @Name, @Uni, @StudentId)",
                         new { Email = "admin@soundstudio.com", Hash = HashPassword("admin"), Name = "admin", Uni = "System", StudentId = "000000" });
                 }
+
+                // Xóa toàn bộ StreamCache để loại bỏ các URL định dạng webm bị lỗi lưu từ bản cũ
+                connection.Execute("DELETE FROM StreamCache");
             }
         }
 
