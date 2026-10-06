@@ -266,7 +266,10 @@ namespace soundapp
                     if (string.IsNullOrEmpty(streamUrl))
                     {
                         var manifest = await _youtube.Videos.Streams.GetManifestAsync(video.Id, token);
-                        var streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+                        // Chỉ lấy định dạng mp4/m4a vì WPF MediaPlayer không giải mã được WebM/Opus mặc định
+                        var streamInfo = manifest.GetAudioOnlyStreams()
+                            .Where(s => s.Container == YoutubeExplode.Videos.Streams.Container.Mp4)
+                            .GetWithHighestBitrate();
 
                         if (streamInfo == null || token.IsCancellationRequested) return;
                         streamUrl = streamInfo.Url;
@@ -527,7 +530,9 @@ namespace soundapp
                 {
                     var video = await _youtube.Videos.GetAsync(urlToDownload);
                     var manifest = await _youtube.Videos.Streams.GetManifestAsync(video.Id);
-                    var streamInfo = manifest.GetAudioOnlyStreams().GetWithHighestBitrate();
+                    var streamInfo = manifest.GetAudioOnlyStreams()
+                        .Where(s => s.Container == YoutubeExplode.Videos.Streams.Container.Mp4)
+                        .GetWithHighestBitrate();
 
                     if (streamInfo == null)
                     {
