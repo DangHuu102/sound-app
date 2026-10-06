@@ -265,6 +265,16 @@ namespace soundapp
             }
         }
 
+        public static List<PlayHistory> GetPlaylistItems(int playlistId)
+        {
+            using (var connection = new SqliteConnection(GetConnectionString()))
+            {
+                return connection.Query<PlayHistory>(
+                    "SELECT Id, Title, Url, ThumbnailUrl, CreatedAt FROM PlaylistItems WHERE PlaylistId = @PlaylistId ORDER BY CreatedAt ASC",
+                    new { PlaylistId = playlistId }).ToList();
+            }
+        }
+
         public static void CreatePlaylist(string name)
         {
             using (var connection = new SqliteConnection(GetConnectionString()))

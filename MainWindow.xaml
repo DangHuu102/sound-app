@@ -244,7 +244,8 @@
                 <ListBox x:Name="PlaylistList" Background="Transparent" BorderThickness="0"
                          Foreground="{StaticResource TextMuted}" MaxHeight="120"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                         ScrollViewer.VerticalScrollBarVisibility="Auto">
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         SelectionChanged="PlaylistList_SelectionChanged">
                     <ListBox.ItemContainerStyle>
                         <Style TargetType="ListBoxItem">
                             <Setter Property="Cursor" Value="Hand"/>

@@ -456,6 +456,35 @@ namespace soundapp
             try { PlaylistList.ItemsSource = DatabaseManager.GetPlaylists(); } catch { }
         }
 
+        private void PlaylistList_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            if (PlaylistList.SelectedItem is Playlist pl)
+            {
+                var items = DatabaseManager.GetPlaylistItems(pl.Id);
+                
+                if (items == null || items.Count == 0)
+                {
+                    ShowNotification($"Playlist '{pl.Name}' đang trống!", "warning");
+                }
+                else
+                {
+                    _queueItems.Clear();
+                    foreach (var item in items)
+                    {
+                        _queueItems.Add(new TrackItem {
+                            Title = item.Title,
+                            YoutubeUrl = item.Url,
+                            ThumbnailUrl = item.ThumbnailUrl
+                        });
+                    }
+                    ShowNotification($"Đã mở {items.Count} bài từ {pl.Name} vào Hàng đợi", "info");
+                }
+                
+                // Bỏ chọn để user có thể click lại chính playlist đó nếu muốn
+                PlaylistList.SelectedItem = null;
+            }
+        }
+
         private void CreatePlaylistBtn_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new CreatePlaylistDialog();
