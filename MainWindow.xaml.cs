@@ -455,40 +455,31 @@ namespace soundapp
         {
             try
             {
-                string seedUrl = _currentYoutubeUrl;
-                if (string.IsNullOrEmpty(seedUrl) && _historyItems.Count > 0)
+                string seedTitle = "";
+                string seedArtist = "";
+
+                if (!string.IsNullOrEmpty(CurrentFileText.Text) && CurrentFileText.Text != "No audio playing")
                 {
-                    seedUrl = _historyItems[0].Url;
+                    seedTitle = CurrentFileText.Text;
+                }
+                else
+                {
+                    var history = DatabaseManager.GetHistory();
+                    if (history != null && history.Count > 0)
+                    {
+                        seedTitle = history[0].Title;
+                    }
                 }
 
-                if (string.IsNullOrEmpty(seedUrl))
+                if (string.IsNullOrEmpty(seedTitle))
                 {
                     ShowNotification("Hãy phát 1 bài hát để hệ thống lấy cơ sở gợi ý nhé!", "warning");
                     return;
                 }
 
-                ShowNotification("Đang phân tích sở thích để lấy gợi ý...", "info");
-                
-                // Parse Video ID from URL
-                string youtubeId = "";
-                if (seedUrl.Contains("v="))
-                {
-                    var uri = new Uri(seedUrl);
-                    var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
-                    youtubeId = query["v"];
-                }
-                else if (seedUrl.Contains("youtu.be/"))
-                {
-                    youtubeId = seedUrl.Split("youtu.be/")[1].Split('?')[0];
-                }
+                ShowNotification($"Đang tìm bài hát tương tự '{seedTitle}'...", "info");
 
-                if (string.IsNullOrEmpty(youtubeId))
-                {
-                    ShowNotification("Không thể gợi ý từ file nhạc local.", "warning");
-                    return;
-                }
-
-                var recommendations = await RecommendationService.GetRelatedTracksAsync(youtubeId);
+                var recommendations = await RecommendationService.GetRecommendationsAsync(seedTitle, seedArtist);
                 
                 if (recommendations != null && recommendations.Count > 0)
                 {
@@ -497,7 +488,7 @@ namespace soundapp
                     {
                         _queueItems.Add(track);
                     }
-                    ShowNotification($"Đã tạo Playlist Khám phá với {recommendations.Count} bài!", "info");
+                    ShowNotification($"Đã tải {recommendations.Count} bài gợi ý vào Hàng đợi!", "info");
                 }
                 else
                 {
