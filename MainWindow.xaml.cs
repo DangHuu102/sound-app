@@ -268,10 +268,24 @@ namespace soundapp
                         var manifest = await _youtube.Videos.Streams.GetManifestAsync(video.Id, token);
                         // Chỉ lấy định dạng mp4/m4a vì WPF MediaPlayer không giải mã được WebM/Opus mặc định
                         var streamInfo = manifest.GetAudioOnlyStreams()
-                            .Where(s => s.Container == YoutubeExplode.Videos.Streams.Container.Mp4)
+                            .Where(s => s.Container.Name == "mp4" || s.Container.Name == "m4a")
                             .GetWithHighestBitrate();
 
-                        if (streamInfo == null || token.IsCancellationRequested) return;
+                        // Fallback 1: Nếu không có m4a, thử lấy luồng video+audio định dạng mp4 (WPF vẫn phát được tiếng)
+                        if (streamInfo == null)
+                        {
+                            streamInfo = manifest.GetMuxedStreams()
+                                .Where(s => s.Container.Name == "mp4")
+                                .GetWithHighestBitrate();
+                        }
+
+                        if (streamInfo == null)
+                        {
+                            Dispatcher.Invoke(() => ShowNotification("Bài hát này không hỗ trợ định dạng MP4. Vui lòng thử bài khác!", "error"));
+                            return;
+                        }
+
+                        if (token.IsCancellationRequested) return;
                         streamUrl = streamInfo.Url;
                         
                         // Lưu vào cache để dùng lại
@@ -531,12 +545,19 @@ namespace soundapp
                     var video = await _youtube.Videos.GetAsync(urlToDownload);
                     var manifest = await _youtube.Videos.Streams.GetManifestAsync(video.Id);
                     var streamInfo = manifest.GetAudioOnlyStreams()
-                        .Where(s => s.Container == YoutubeExplode.Videos.Streams.Container.Mp4)
+                        .Where(s => s.Container.Name == "mp4" || s.Container.Name == "m4a")
                         .GetWithHighestBitrate();
 
                     if (streamInfo == null)
                     {
-                        ShowNotification("Lỗi: Không tìm thấy link tải!", "error");
+                        streamInfo = manifest.GetMuxedStreams()
+                            .Where(s => s.Container.Name == "mp4")
+                            .GetWithHighestBitrate();
+                    }
+
+                    if (streamInfo == null)
+                    {
+                        ShowNotification("Lỗi: Không tìm thấy link tải MP4 tương thích!", "error");
                         DownloadProgressGrid.Visibility = Visibility.Collapsed;
                         return;
                     }
