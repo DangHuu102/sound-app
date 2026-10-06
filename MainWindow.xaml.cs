@@ -13,7 +13,8 @@ namespace soundapp
     public partial class MainWindow : Window
     {
         // Dùng chung 1 instance, không tạo mới mỗi lần
-        private readonly MediaPlayer _mediaPlayer = new MediaPlayer();
+        private NAudio.Wave.WaveOutEvent? _waveOut;
+        private NAudio.Wave.MediaFoundationReader? _mfReader;
         private readonly YoutubeClient _youtube = new YoutubeClient();
         private Forms.NotifyIcon _notifyIcon = null!;
         private string? _soundFilePath;
@@ -35,7 +36,6 @@ namespace soundapp
             CurrentFileText.Text = "Ready to play";
             SetupTrayIcon();
             InitAudioDevice();
-            SetupMediaPlayer();
             UpdateUserUI();
         }
 
@@ -60,57 +60,77 @@ namespace soundapp
             UpdateUserUI();
         }
 
-        private void SetupMediaPlayer()
+        private void PlayAudioStream(string url)
         {
-            _mediaPlayer.MediaOpened += (s, e) =>
+            try
             {
-                _mediaPlayer.Volume = 1.0; 
-                _mediaPlayer.Play();
-                Dispatcher.Invoke(() =>
+                StopAudio();
+                _mfReader = new NAudio.Wave.MediaFoundationReader(url);
+                _waveOut = new NAudio.Wave.WaveOutEvent();
+                _waveOut.Init(_mfReader);
+                _waveOut.Volume = 1.0f;
+                
+                _waveOut.PlaybackStopped += (s, e) =>
                 {
-                    _isPlaying = true;
-                    PlayPauseBtn.Tag = "playing";
-                    YoutubeStatusText.Text = $"▶ {CurrentFileText.Text}";
-                    PlayPauseBtn.Opacity = 1.0;
-                });
-            };
-
-            _mediaPlayer.MediaFailed += (s, e) =>
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    ShowNotification($"Lỗi phát nhạc: {e.ErrorException?.Message}", "error");
-                    
-                    _isPlaying = false;
-                    PlayPauseBtn.Tag = "paused";
-                    YoutubeStatusText.Text = "Lỗi phát âm thanh";
-                });
-            };
-
-            _mediaPlayer.MediaEnded += (s, e) =>
-            {
-                // Đảm bảo bài hát thực sự đã phát được một lúc (tránh lỗi WMP bỏ qua bài liền lập tức)
-                if (!_mediaPlayer.NaturalDuration.HasTimeSpan || _mediaPlayer.Position.TotalSeconds < 1)
-                {
-                    return; 
-                }
-
-                Dispatcher.Invoke(() =>
-                {
-                    if (_queueItems.Count > 0)
+                    // Lỗi NAudio thường trả về e.Exception khác null, hoặc chỉ đơn giản là hết bài
+                    if (e.Exception != null)
                     {
-                        var nextTrack = _queueItems[0];
-                        _queueItems.RemoveAt(0);
-                        _ = PlayTrackAsync(nextTrack.YoutubeUrl);
+                        Dispatcher.Invoke(() =>
+                        {
+                            ShowNotification($"Lỗi phát nhạc: {e.Exception.Message}", "error");
+                            _isPlaying = false;
+                            PlayPauseBtn.Tag = "paused";
+                            YoutubeStatusText.Text = "Lỗi phát âm thanh";
+                        });
+                        return;
                     }
-                    else
+
+                    // Hết bài, tự động next
+                    Dispatcher.Invoke(() =>
                     {
-                        _isPlaying = false;
-                        PlayPauseBtn.Tag = "paused";
-                        YoutubeStatusText.Text = "🎵 Đã phát xong";
-                    }
-                });
-            };
+                        if (_queueItems.Count > 0)
+                        {
+                            var nextTrack = _queueItems[0];
+                            _queueItems.RemoveAt(0);
+                            _ = PlayTrackAsync(nextTrack.YoutubeUrl);
+                        }
+                        else
+                        {
+                            _isPlaying = false;
+                            PlayPauseBtn.Tag = "paused";
+                            YoutubeStatusText.Text = "🎵 Đã phát xong";
+                        }
+                    });
+                };
+                
+                _waveOut.Play();
+                _isPlaying = true;
+                PlayPauseBtn.Tag = "playing";
+                YoutubeStatusText.Text = $"▶ {CurrentFileText.Text}";
+                PlayPauseBtn.Opacity = 1.0;
+            }
+            catch (Exception ex)
+            {
+                ShowNotification($"Lỗi phát nhạc: {ex.Message}", "error");
+                _isPlaying = false;
+                PlayPauseBtn.Tag = "paused";
+                YoutubeStatusText.Text = "Lỗi phát âm thanh";
+            }
+        }
+
+        private void StopAudio()
+        {
+            if (_waveOut != null)
+            {
+                _waveOut.Stop();
+                _waveOut.Dispose();
+                _waveOut = null;
+            }
+            if (_mfReader != null)
+            {
+                _mfReader.Dispose();
+                _mfReader = null;
+            }
         }
 
         private void InitAudioDevice()
@@ -291,8 +311,7 @@ namespace soundapp
 
                     Dispatcher.Invoke(() =>
                     {
-                        _mediaPlayer.Stop();
-                        _mediaPlayer.Close();
+                        StopAudio();
 
                         _soundFilePath = streamUrl;
                         _currentThumbnailUrl = thumbUrl;
@@ -312,7 +331,7 @@ namespace soundapp
                         catch { }
 
                         CurrentFileText.Text = title;
-                        _mediaPlayer.Open(new Uri(_soundFilePath));
+                        PlayAudioStream(_soundFilePath);
                         
                         // Thêm history ngầm không block UI
                         System.Threading.Tasks.Task.Run(async () => 
@@ -464,7 +483,7 @@ namespace soundapp
 
             if (_isPlaying)
             {
-                _mediaPlayer.Pause();
+                _waveOut?.Pause();
                 _isPlaying = false;
                 PlayPauseBtn.Tag = "paused";
                 YoutubeStatusText.Text = "⏸ Paused";
@@ -472,12 +491,12 @@ namespace soundapp
             else
             {
                 // Nếu đang ở cuối bài thì phát lại từ đầu
-                if (_mediaPlayer.NaturalDuration.HasTimeSpan && _mediaPlayer.Position >= _mediaPlayer.NaturalDuration.TimeSpan)
+                if (_mfReader != null && _mfReader.Position >= _mfReader.Length)
                 {
-                    _mediaPlayer.Position = TimeSpan.Zero;
+                    _mfReader.Position = 0;
                 }
 
-                _mediaPlayer.Play();
+                _waveOut?.Play();
                 _isPlaying = true;
                 PlayPauseBtn.Tag = "playing";
                 YoutubeStatusText.Text = $"▶ {CurrentFileText.Text}";
@@ -488,7 +507,7 @@ namespace soundapp
         {
             if (!string.IsNullOrEmpty(_soundFilePath))
             {
-                _mediaPlayer.Stop();
+                StopAudio();
                 _isPlaying = false;
                 PlayPauseBtn.Tag = "paused";
                 YoutubeStatusText.Text = "⏹ Stopped";
@@ -505,8 +524,8 @@ namespace soundapp
             {
                 _soundFilePath = dialog.FileName;
                 CurrentFileText.Text = System.IO.Path.GetFileName(_soundFilePath);
-                _mediaPlayer.Open(new Uri(_soundFilePath));
-                // KHÔNG Play ngay, user tự ấn Play. 
+                PlayAudioStream(_soundFilePath);
+                _waveOut?.Pause(); // Pause immediately, wait for user to click play
                 _isPlaying = false;
                 PlayPauseBtn.Tag = "paused";
                 YoutubeStatusText.Text = "Đã tải file. Bấm Play để phát.";
@@ -622,8 +641,7 @@ namespace soundapp
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            _mediaPlayer.Stop();
-            _mediaPlayer.Close();
+            StopAudio();
             _notifyIcon.Dispose();
             System.Windows.Application.Current.Shutdown();
         }
