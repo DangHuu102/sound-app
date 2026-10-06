@@ -557,7 +557,7 @@ namespace soundapp
         {
             var dialog = new Microsoft.Win32.OpenFileDialog
             {
-                Filter = "Audio Files (*.wav;*.mp3)|*.wav;*.mp3|All files (*.*)|*.*"
+                Filter = "Media Files (*.mp3;*.mp4;*.wav;*.m4a)|*.mp3;*.mp4;*.wav;*.m4a|All files (*.*)|*.*"
             };
             if (dialog.ShowDialog() == true)
             {

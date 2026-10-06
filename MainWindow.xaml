@@ -136,9 +136,9 @@
         <!-- COLUMN 1: SIDEBAR -->
         <Border Background="Transparent" BorderBrush="{StaticResource PanelBorderBrush}" BorderThickness="0,0,1,0">
             <StackPanel Margin="20,40,20,0">
-                <!-- App Menu (Home, Search, Library) -->
+                <!-- App Menu (Home, Library) -->
                 <StackPanel Margin="0,0,0,40">
-                    <Button Margin="0,0,0,4">
+                    <Button Margin="0,0,0,4" Cursor="Hand">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border Background="#1Affffff" CornerRadius="8" Padding="15,10">
@@ -147,16 +147,7 @@
                             </ControlTemplate>
                         </Button.Template>
                     </Button>
-                    <Button Margin="0,0,0,4">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border Background="Transparent" CornerRadius="8" Padding="15,10">
-                                    <TextBlock Text="🔍  Search" Foreground="#8783a2" FontSize="13"/>
-                                </Border>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
-                    <Button>
+                    <Button Click="BrowseButton_Click" Cursor="Hand" ToolTip="Open local media files (mp3, mp4, etc.)">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
                                 <Border Background="Transparent" CornerRadius="8" Padding="15,10">
