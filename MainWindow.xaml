@@ -294,20 +294,6 @@
                     </Button.Template>
                 </Button>
 
-                <!-- Settings Email Button -->
-                <Button Margin="0,8,0,0" Click="EmailSettingsBtn_Click">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border CornerRadius="8" Padding="12,8" Background="Transparent" BorderBrush="#2e2a4a" BorderThickness="1">
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <TextBlock Text="⚙" Foreground="#8783a2" FontSize="13" Margin="0,0,8,0"/>
-                                    <TextBlock Text="Cài đặt Email" Foreground="#8783a2" FontSize="12"/>
-                                </StackPanel>
-                            </Border>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
-
             </StackPanel>
         </Border>
 

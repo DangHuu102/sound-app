@@ -473,12 +473,6 @@ namespace soundapp
             miniPlayer.Show();
         }
 
-        private void EmailSettingsBtn_Click(object sender, RoutedEventArgs e)
-        {
-            var settings = new SmtpSettingsWindow { Owner = this };
-            settings.ShowDialog();
-        }
-
         private void ShowNotification(string msg, string type = "info")
         {
             ToastMessage.Text = msg;
