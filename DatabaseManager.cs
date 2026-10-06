@@ -93,6 +93,15 @@ namespace soundapp
                         ThumbnailUrl TEXT NOT NULL,
                         CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
                     );");
+
+                // Seed tài khoản Admin mặc định (nếu chưa tồn tại)
+                var adminExists = connection.QueryFirstOrDefault<int>("SELECT COUNT(1) FROM Users WHERE Email = 'admin@soundstudio.com'");
+                if (adminExists == 0)
+                {
+                    connection.Execute(
+                        "INSERT INTO Users (Email, PasswordHash, DisplayName, University, StudentId) VALUES (@Email, @Hash, @Name, @Uni, @StudentId)",
+                        new { Email = "admin@soundstudio.com", Hash = HashPassword("admin"), Name = "admin", Uni = "System", StudentId = "000000" });
+                }
             }
         }
 
