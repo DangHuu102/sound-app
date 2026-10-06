@@ -1,8 +1,34 @@
+﻿# Bi mat va cau hinh (Secrets and configuration)
+.env
+*.pem
+*.key
+*.cert
+secrets.json
+
+# Thu vien va ban dung (Libraries and build)
 bin/
 obj/
+packages/
+TestResults/
+
+# Tep cua may ca nhan (Personal machine files)
+.idea/
+.vscode/
+.DS_Store
+*.log
+debug_log.txt
 .vs/
 *.user
 *.suo
 *.userosscache
 *.sln.docstates
+
+# Du lieu that cua nguoi dung (Real user data)
 *.db
+*.sqlite
+*.sqlite3
+*.sqlite-shm
+*.sqlite-wal
+*.bak
+*.xlsx
+*.csv
