@@ -342,26 +342,31 @@ namespace soundapp
                                 DatabaseManager.AddHistory(title, targetUrl, _currentThumbnailUrl);
                                 Dispatcher.InvokeAsync(() => LoadHistory()); // InvokeAsync chống deadlock
                                 
-                                // Lấy gợi ý bài hát mới và cho vào Queue (Up Next)
-                                var recommendations = await RecommendationService.GetRecommendationsAsync(meta.SongTitle, meta.Artist);
-                                
-                                // Hủy add nếu user đã next bài khác
-                                if (token.IsCancellationRequested) return;
+                                bool isAutoRecommend = false;
+                                Dispatcher.Invoke(() => isAutoRecommend = AutoRecommendCheckBox.IsChecked == true);
 
-                                Dispatcher.InvokeAsync(() => 
+                                if (isAutoRecommend)
                                 {
-                                    // Bổ sung nút Toggle tính năng tự play sau này (tạm thời cứ check count)
-                                    if (_queueItems.Count < 5)
+                                    // Lấy gợi ý bài hát mới và cho vào Queue (Up Next)
+                                    var recommendations = await RecommendationService.GetRecommendationsAsync(meta.SongTitle, meta.Artist);
+                                    
+                                    // Hủy add nếu user đã next bài khác
+                                    if (token.IsCancellationRequested) return;
+
+                                    Dispatcher.InvokeAsync(() => 
                                     {
-                                        foreach (var track in recommendations)
+                                        if (_queueItems.Count < 5)
                                         {
-                                            if (!_queueItems.Any(q => q.YoutubeUrl == track.YoutubeUrl))
+                                            foreach (var track in recommendations)
                                             {
-                                                _queueItems.Add(track);
+                                                if (!_queueItems.Any(q => q.YoutubeUrl == track.YoutubeUrl))
+                                                {
+                                                    _queueItems.Add(track);
+                                                }
                                             }
                                         }
-                                    }
-                                });
+                                    });
+                                }
                             }
                             catch { } // Tránh UnobservedTaskException gây crash toàn app
                         });

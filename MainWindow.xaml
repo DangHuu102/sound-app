@@ -603,7 +603,7 @@
                         <Grid Margin="0,0,0,10">
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="Đợi phát (Queue)" Foreground="White" FontWeight="Bold" Margin="0,0,15,0"/>
-                                <TextBlock Text="Gợi ý tương tự" Foreground="#8783a2"/>
+                                <CheckBox x:Name="AutoRecommendCheckBox" Content="Tự động gợi ý" Foreground="#8783a2" IsChecked="True" VerticalAlignment="Center" Margin="0,0,10,0"/>
                             </StackPanel>
                             <Button Content="Clear" Foreground="#8783a2" Background="Transparent" BorderThickness="0" 
                                     HorizontalAlignment="Right" VerticalAlignment="Center" Cursor="Hand" Click="ClearQueueBtn_Click">
