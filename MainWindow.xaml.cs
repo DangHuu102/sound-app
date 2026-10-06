@@ -75,7 +75,9 @@ namespace soundapp
                 
                 _waveOut.PlaybackStopped += (s, e) =>
                 {
-                    if (_isManualStop) return; // Không tự động next nếu người dùng tự ấn Stop hoặc ấn bài khác
+                    // Chặn event từ các WaveOut cũ bị ghi đè (Race Condition)
+                    if (s != _waveOut) return;
+                    if (_isManualStop) return;
 
                     // Lỗi NAudio thường trả về e.Exception khác null, hoặc chỉ đơn giản là hết bài
                     if (e.Exception != null)
@@ -171,7 +173,7 @@ namespace soundapp
                 Dispatcher.Invoke(() =>
                 {
                     DeviceNameText.Text = deviceName;
-                    DeviceTypeText.Text = deviceName.Contains("Not Found") ? "⚠️ Cắm tai nghe/loa" : "🔊 Audio Output";
+                    DeviceTypeText.Text = deviceName.Contains("Not Found") ? "🔇 Cắm tai nghe/loa" : "🔊 Audio Output";
                     if (deviceName.Contains("Not Found")) ShowNotification("Không tìm thấy thiết bị âm thanh!", "error");
                 });
             };
@@ -186,6 +188,9 @@ namespace soundapp
                     _isUpdatingSlider = false;
                 });
             };
+
+            // Ép cập nhật volume slider bằng giá trị thực tế của Windows ngay khi mở app
+            _audioService.RefreshCurrentDevice();
         }
 
         private void SetupTrayIcon()
